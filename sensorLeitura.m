@@ -1,0 +1,59 @@
+function dist = sensorLeitura(robo, paredes, lado)
+    % lado = 'esquerda' ou 'direita'
+
+    max_dist = 1.0; % alcance máximo do sensor
+    N = 100; % resolução do "raio"
+    d = linspace(0, max_dist, N);
+
+    if strcmp(lado, 'direita')
+        ang = robo.theta - pi/2;
+    elseif strcmp(lado, 'esquerda')
+        ang = robo.theta + pi/2;
+    else
+        ang = robo.theta;
+    end
+
+    % Ponto inicial do raio
+    x0 = robo.x;
+    y0 = robo.y;
+
+    % Reta do sensor
+    x_line = x0 + d * cos(ang);
+    y_line = y0 + d * sin(ang);
+
+    % Testa colisão ponto a ponto
+    for i = 1:N
+        if verificaColisao(x_line(i), y_line(i), paredes)
+            dist = d(i);
+            return;
+        end
+    end
+    dist = max_dist;
+end
+
+
+function colidiu = verificaColisao(x, y, paredes)
+    colidiu = false;
+
+    % Verifica se x,y está perto de alguma parede vertical
+    for i = 1:size(paredes.V,1)
+        xv = paredes.V(i,1);
+        y1 = paredes.V(i,2);
+        y2 = paredes.V(i,3);
+        if abs(x - xv) < 0.01 && y >= min(y1,y2) && y <= max(y1,y2)
+            colidiu = true;
+            return;
+        end
+    end
+
+    % Verifica se x,y está perto de alguma parede horizontal
+    for i = 1:size(paredes.H,1)
+        yv = paredes.H(i,1);
+        x1 = paredes.H(i,2);
+        x2 = paredes.H(i,3);
+        if abs(y - yv) < 0.01 && x >= min(x1,x2) && x <= max(x1,x2)
+            colidiu = true;
+            return;
+        end
+    end
+end

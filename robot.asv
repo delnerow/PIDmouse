@@ -1,0 +1,188 @@
+
+function mef(N,mouse)
+    curCell = returnCell(N,mouse);
+    if curCell ~= mouse.cell
+       next_dir = get_smallest_neighbor_dir(floodval, maze_grid, mouse.cell, mouse.dir);
+       mouse.cell=curCell;
+       mouse.comando= next_dir;
+    else
+        if mouse.comando == 1 ||  mouse.comando ==3
+            vaiFrente(mouse) 
+        end
+        if mouse.comando == 2
+            giraDireita(mouse) 
+        end
+        if mouse.comando == 4
+            giraEsquerda(mouse) 
+        end
+    end
+
+
+end
+
+
+function cell = returnCell(N,mouse)
+ row = mod(mouse.y,N);
+ col = mod(mouse.x,N);
+ cell=[row,col];
+end
+
+function vaiFrente(mouse)
+    % Simula sensores laterais
+    dist_esq = sensorLateral(robo, paredesV, paredesH, 'esquerda');
+    dist_dir = sensorLateral(robo, paredesV, paredesH, 'direita');
+    
+    erro_alinhamento = dist_esq - dist_dir;
+    
+    % Ex: adicione um PID para corrigir isso
+    correcao = Kp_alinhar * erro_alinhamento;
+    
+    % Use isso para ajustar a velocidade angular
+    mouse.vL = mouse.v_base - correcao;          
+    mouse.vR = mouse.v_base + correcao;
+
+end
+
+function giraDireita(mouse,ang0)
+    % Simula sensores laterais
+    dist_frente = sensorFrontal(robo,paredesV,paredesH);
+    if(dis_frente> 0.5)
+        erro_alinhamento = dist_frente - 0.5;
+        
+        % Ex: adicione um PID para corrigir isso
+        correcao = Kp_alinhar * erro_alinhamento;
+        
+        % Use isso para ajustar a velocidade angular
+       mouse.vL = mouse.v_base + correcao;          
+       mouse.vR = mouse.v_base + correcao;
+  
+    else
+        %rodar para a direita so ate atingir 90 grau com o angulo inicial
+        % ir em frente ate proxima celula
+        while mouse.ang > ang0-90
+            erro_angulo =  mouse.ang +90 - ang0;
+            correcao = Kp_alinhar * erro_angulo;
+            mouse.vL = mouse.v_base + correcao; 
+            mouse.vR = -mouse.v_base - correcao; 
+        end 
+        mouse.vL = mouse.v_base;          
+        mouse.vR = mouse.v_base;
+    end
+end
+
+function giraEsquerda(mouse,ang0)
+    % Simula sensores laterais
+    dist_frente = sensorFrontal(robo,paredesV,paredesH);
+    if(dis_frente> 0.5)
+        erro_alinhamento = dist_frente - 0.5;
+        
+        % Ex: adicione um PID para corrigir isso
+        correcao = Kp_alinhar * erro_alinhamento;
+        
+        % Use isso para ajustar a velocidade angular
+       mouse.vL = mouse.v_base + correcao;          
+       mouse.vR = mouse.v_base + correcao;
+  
+    else
+        %rodar para a direita so ate atingir 90 grau com o angulo inicial
+        % ir em frente ate proxima celula
+        while mouse.ang > ang0+90
+            erro_angulo =  mouse.ang -90 - ang0;
+            correcao = Kp_alinhar * erro_angulo;
+            mouse.vL = mouse.v_base + correcao; 
+            mouse.vR = -mouse.v_base - correcao; 
+        end 
+        mouse.vL = mouse.v_base;          
+        mouse.vR = mouse.v_base;
+    end
+
+
+
+end
+
+
+
+
+function dist = sensorFrontal(robo, paredesV, paredesH
+
+    max_dist = 1.0; % alcance máximo do sensor
+    N = 100; % resolução do "raio"
+    d = linspace(0, max_dist, N);
+    ang = robo.theta;
+    % Ponto inicial do raio
+    x0 = robo.x;
+    y0 = robo.y;
+
+    % Reta do sensor
+    x_line = x0 + d * cos(ang);
+    y_line = y0 + d * sin(ang);
+
+    % Testa colisão ponto a ponto
+    for i = 1:N
+        if verificaColisao(x_line(i), y_line(i), paredesV, paredesH)
+            dist = d(i);
+            return;
+        end
+    end
+    dist = max_dist;
+end
+
+
+
+function dist = sensorLateral(robo, paredesV, paredesH, lado)
+    % lado = 'esquerda' ou 'direita'
+
+    max_dist = 1.0; % alcance máximo do sensor
+    N = 100; % resolução do "raio"
+    d = linspace(0, max_dist, N);
+
+    if strcmp(lado, 'direita')
+        ang = robo.theta - pi/2;
+    else
+        ang = robo.theta + pi/2;
+    end
+
+    % Ponto inicial do raio
+    x0 = robo.x;
+    y0 = robo.y;
+
+    % Reta do sensor
+    x_line = x0 + d * cos(ang);
+    y_line = y0 + d * sin(ang);
+
+    % Testa colisão ponto a ponto
+    for i = 1:N
+        if verificaColisao(x_line(i), y_line(i), paredesV, paredesH)
+            dist = d(i);
+            return;
+        end
+    end
+    dist = max_dist;
+end
+
+
+function colidiu = verificaColisao(x, y, paredesV, paredesH)
+    colidiu = false;
+
+    % Verifica se x,y está perto de alguma parede vertical
+    for i = 1:size(paredesV,1)
+        xv = paredesV(i,1);
+        y1 = paredesV(i,2);
+        y2 = paredesV(i,3);
+        if abs(x - xv) < 0.01 && y >= min(y1,y2) && y <= max(y1,y2)
+            colidiu = true;
+            return;
+        end
+    end
+
+    % Verifica se x,y está perto de alguma parede horizontal
+    for i = 1:size(paredesH,1)
+        yv = paredesH(i,1);
+        x1 = paredesH(i,2);
+        x2 = paredesH(i,3);
+        if abs(y - yv) < 0.01 && x >= min(x1,x2) && x <= max(x1,x2)
+            colidiu = true;
+            return;
+        end
+    end
+end
