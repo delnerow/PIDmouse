@@ -3,25 +3,37 @@ function  comandos = mef(curCell, mouse, floodval, maze_grid,paredes)
 
     % Debug
     % fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x,mouse.y,mouse.theta/pi*180);
-    coord=['N','E','S','W'];
-    fprintf("Mouse esta na celula [%f,%f]  querendo ir para %s \n",curCell(1),curCell(2), coord(mouse.dir+1));
+    %coord=['N','E','S','W'];
+    %fprintf("Mouse esta na celula [%f,%f]  querendo ir para %s \n",curCell(1),curCell(2), coord(mouse.dir+1));
     % fprintf("mas na sua cabecinha ele esta em [%f,%f]\n ",mouse.cell(1),mouse.cell(2));
     
     % Se entrar em nova célula ou for a primeira
-    if ~isequal(curCell,mouse.cell) | isequal(mouse.cell,[1,1])
+    if ~isequal(curCell,mouse.cell)
+       % Debug
+       coord=['N','E','S','W'];
+       fprintf("Mouse esta na celula [%f,%f]  querendo ir para %s \n",curCell(1),curCell(2), coord(mouse.dir+1));
+
        next_dir = get_smallest_neighbor_dir(floodval, maze_grid, curCell, mouse.dir)-1;  % 0=up, 1=right, 2=down, 3=left
        delta_dir = next_dir-mouse.dir;            % 0=reto, 1=giraDireita, -1; giraEsquerda
        if abs(delta_dir) == 3, delta_dir= delta_dir/(-3); end
-       
+       fprintf("Vamos ter que fazer %f \n", delta_dir);
+      
        %Define novos comandos para o mouse local, que ainda não retornou
        mouse.cell=curCell;
        mouse.rot=delta_dir;
        mouse.dir=next_dir;
        mouse.distancia_acumulada=0;
        % Debug
-       fprintf("!!!!!!!!Mudando!!!!!!\n")
        coord=['N','E','S','W'];
        fprintf("%s",coord(next_dir+1));
+       if mouse.rot == 0
+            fprintf("Reto\n")
+       elseif mouse.rot == 1
+          fprintf("gira direita\n");
+       elseif mouse.rot == -1
+          fprintf("gira esquerda\n");
+       end
+
     end
        % Define novos/mesmos comandos para o mouse, quando função retornar
        comandos.cell=curCell;
@@ -30,13 +42,10 @@ function  comandos = mef(curCell, mouse, floodval, maze_grid,paredes)
        comandos.ac=mouse.distancia_acumulada;
 
     if mouse.rot == 0
-       fprintf("Reto\n")
        comandos.velocidades = vaiFrente(mouse,paredes);
     elseif mouse.rot == 1
-       fprintf("gira direita\n")
        comandos.velocidades = giraDireita(mouse,paredes); 
     elseif mouse.rot == -1
-       fprintf("gira esquerda\n")
        comandos.velocidades = giraEsquerda(mouse,paredes) ;
     end
 end
@@ -66,6 +75,10 @@ function dir = get_smallest_neighbor_dir(floodval, maze, pos, preferred_dir)
     if ismember(preferred_dir, candidates)
         dir = preferred_dir;
     else
+        for i = 1:length(candidates)
+            fprintf("| %f", i); 
+        end
+            fprintf("| \n");
         dir = candidates(end);
     end
 end
