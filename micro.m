@@ -1,6 +1,5 @@
 % Micromouse Maze Simulation with Flood Fill Integration
 % Uses bitfield maze encoding, flood fill logic, and dynamic wall checking.
-
 function micro()
     % Maze in bitfield format (1D, row-major order, uint8).
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
@@ -113,73 +112,8 @@ function micro()
     title(sprintf('Terminou em %f segundos!',toc));
 end
 
-% retorna célula baseada no  arredondamento de x e y do mouse
-function cell = returnCell(N,mouse)
- row = mod(floor(16-mouse.y),N)+1;
- col = mod(floor(mouse.x),N)+1;
- cell=[row,col];
-end
 
-% atualiza posição no plot
-function visualize_mouse(mouse, h_mouse, h_arrow)
-    arrow_length = 0.4;
-    dir_vectors = [0 1; 1 0; 0 -1; -1 0]; % up, right, down, left
-    dx = dir_vectors(mouse.dir+1,1)*arrow_length;
-    dy = dir_vectors(mouse.dir+1,2)*arrow_length;
-    set(h_mouse, 'XData', mouse.x, 'YData',  mouse.y);
-    set(h_arrow, 'XData', mouse.x, 'YData',  mouse.y, 'UData', dx, 'VData', dy);
-    
-    drawnow;
-end
 
-% plota o mapa com paredes e etc
-function visualize_maze_bitfield(maze, goal, floodval)
-    N = size(maze,1);
-    cell_size_cm=18;
-    clf; hold on;
-    for r = 1:N
-        for c = 1:N
-            x = c-1; y = N-r;
-            cell_byte = maze(r,c);
-            if bitand(cell_byte,4), plot([x,x+1],[y+1,y+1],'k-','LineWidth',2); end % North
-            if bitand(cell_byte,2), plot([x+1,x+1],[y,y+1],'k-','LineWidth',2); end % East
-            if bitand(cell_byte,1), plot([x,x+1],[y,y],'k-','LineWidth',2); end   % South
-            if bitand(cell_byte,8), plot([x,x],[y,y+1],'k-','LineWidth',2); end   % West
-            % Optionally, show flood value in each cell:
-            text(x+0.5,y+0.5,num2str(floodval(r,c)),'Color',[0.5 0.5 1],'FontSize',8,'HorizontalAlignment','center');
-        end
-    end
-    % plot goal
-    gx = goal(2)-0.5; gy = N-goal(1)+0.5;
-    plot(gx, gy, 'gs', 'MarkerSize', 18, 'MarkerFaceColor', 'g');
-    
-    axis equal off;
-    xlim([-0.5,N+0.5]); ylim([-0.5,N+0.5]);
-    xlabel('X (cm)');
-    ylabel('Y (cm)');
-    set(gca, 'XTick', 0:N, 'XTickLabel', 0:cell_size_cm:cell_size_cm*N);
-    set(gca, 'YTick', 0:N, 'YTickLabel', 0:cell_size_cm:cell_size_cm*N);
-    title(sprintf('Micromouse Maze (%dx%d cells, %dx%d cm cada)', N, N, cell_size_cm, cell_size_cm));
-    hold off;
-    drawnow;
-end
 
-function paredes = obterParedes(maze)
-    N = size(maze,1);
-    paredesV=[];
-    paredesH=[];
-    clf; hold on;
-    for r = 1:N
-        for c = 1:N
-            x = c-1; y = N-r;
-            cell_byte = maze(r,c);
-            if bitand(cell_byte,4), paredesH(end+1, :)=[y+1;x;x+1]; end % North
-            if bitand(cell_byte,2), paredesV(end+1, :)=[x+1;y;y+1]; end % East
-            if bitand(cell_byte,1), paredesH(end+1, :)=[y;x;x+1]; end   % South
-            if bitand(cell_byte,8), paredesV(end+1, :)=[x;y;y+1]; end   % West
-        end
-    end
-    paredes.V=paredesV;
-    paredes.H=paredesH;
-end
+
 

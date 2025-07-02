@@ -2,15 +2,17 @@
 function  comandos = mef(curCell, mouse, floodval, maze_grid,paredes)
 
     % Debug
-    fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x,mouse.y,mouse.theta/pi*180);
+    % fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x,mouse.y,mouse.theta/pi*180);
     coord=['N','E','S','W'];
     fprintf("Mouse esta na celula [%f,%f]  querendo ir para %s \n",curCell(1),curCell(2), coord(mouse.dir+1));
-    fprintf("mas na sua cabecinha ele esta em [%f,%f]\n ",mouse.cell(1),mouse.cell(2));
+    % fprintf("mas na sua cabecinha ele esta em [%f,%f]\n ",mouse.cell(1),mouse.cell(2));
     
     % Se entrar em nova célula ou for a primeira
     if ~isequal(curCell,mouse.cell) | isequal(mouse.cell,[1,1])
        next_dir = get_smallest_neighbor_dir(floodval, maze_grid, curCell, mouse.dir)-1;  % 0=up, 1=right, 2=down, 3=left
-       delta_dir = mod(next_dir-mouse.dir,1);            % 0=reto, 1=giraDireita, -1; giraEsquerda
+       delta_dir = next_dir-mouse.dir;            % 0=reto, 1=giraDireita, -1; giraEsquerda
+       if abs(delta_dir) == 3, delta_dir= delta_dir/(-3); end
+       fprintf("Vamos ter que fazer %f \n", delta_dir);
        
        %Define novos comandos para o mouse local, que ainda não retornou
        mouse.cell=curCell;
@@ -116,7 +118,7 @@ function velocidades = vaiFrente(mouse,paredes)
     velocidades.L = correcao + gira;          
     velocidades.R = correcao - gira;
 
-    fprintf("Velocidades comandadas: \n Left: %f \n Right: %f \n",mouse.vL,mouse.vR);
+    % fprintf("Velocidades comandadas: \n Left: %f \n Right: %f \n",mouse.vL,mouse.vR);
     end
 
 function velocidades=giraDireita(mouse,paredes)
