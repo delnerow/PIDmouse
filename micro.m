@@ -14,7 +14,7 @@ function micro()
     % Inicialização do robô
     % Constantes
     mouse = struct();
-    mouse.L = 0.1;                  % distância entre rodas (1/18 cm)
+    mouse.L = 0.1;                  % distância entre rodas (18/10 cm)
     mouse.v_base=0.2;               % velocidade padrão, inutilizada por enquanto
     % Variáveis
     mouse.distancia_acumulada = 0;  % um odometro resetado a cada célular

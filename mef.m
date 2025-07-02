@@ -136,16 +136,16 @@ function velocidades = vaiFrente(mouse,paredes)
 
 function velocidades=giraDireita(mouse,paredes)
     % faz 1/4 de circunferencia, literally
-    w= mouse.v_base*2;
-    velocidades.L = w*(0.5+mouse.L/2); 
-    velocidades.R = w*(0.5-mouse.L/2);
+    w= mouse.v_base;
+    velocidades.L = w*(1+mouse.L); 
+    velocidades.R = w*(1-mouse.L);
 end
 
 function velocidades=giraEsquerda(mouse,paredes)
     % faz 1/4 de circunferencia, literally
-    w= mouse.v_base*2;
-    velocidades.L = w*(0.5-mouse.L/2); 
-    velocidades.R = w*(0.5+mouse.L/2);
+    w= mouse.v_base;
+    velocidades.L = w*(1-mouse.L); 
+    velocidades.R = w*(1+mouse.L);
 end
 
 
