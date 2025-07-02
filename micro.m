@@ -14,7 +14,7 @@ function micro()
     % Inicialização do robô
     % Constantes
     mouse = struct();
-    mouse.L = 0.1;                  % distância entre rodas (1/18 cm)
+    mouse.L = 16/18;                  % distância entre rodas (1:18 cm)
     mouse.v_base=0.2;               % velocidade padrão, inutilizada por enquanto
     % Variáveis
     mouse.distancia_acumulada = 0;  % um odometro resetado a cada célular
@@ -41,6 +41,7 @@ function micro()
     % plotando o mapa
     visualize_maze_bitfield(maze_grid, goal, floodval);
 
+
     % Plotando mouse pela primeira vez
     % seta indicando onde o robo deve facear, a dir
     arrow_length = 0.4;
@@ -49,7 +50,7 @@ function micro()
     dy = dir_vectors(mouse.dir+1,2)*arrow_length;
     hold on;
     % bolinha vermelha do robo. sem correalção com seu tamanho
-    h_mouse = plot(mouse.x, mouse.y, 'ro', 'MarkerSize', 16, 'MarkerFaceColor', 'r');
+    h_mouse = plot(mouse.x, mouse.y, 'ro', 'MarkerSize', 15, 'MarkerFaceColor', 'r');
     h_arrow = quiver(mouse.x,  mouse.y, dx, dy, 0, 'k', 'LineWidth', 2, 'MaxHeadSize',0.8);
     % Plotar raio do sensor
     h_ray_f = plot([mouse.x mouse.x], [mouse.y mouse.y], 'r--'); % frente
