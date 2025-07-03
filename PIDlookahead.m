@@ -1,6 +1,19 @@
 % é uma classe, pois o macaco disse qu sim
 classdef PIDlookahead
     properties
+        %Dados do motor
+        L_motor=0;
+        J_motor=0;
+        R_motor=0;
+        Kt_motor=0;
+        T_amostragem=0;
+        %Ganhos PID motor
+        Kp_motor=0;
+        Ki_motor=0;
+        Kd_motor=0;
+        integral_motor=0;
+        last_error_motor=0;
+        
         % Ganhos do controlador PID para correção lateral (desvio lateral do robô)
         Kp_lat = 0;  % ganho proporcional lateral
         Ki_lat = 0;  % ganho integral lateral
@@ -135,15 +148,24 @@ classdef PIDlookahead
             corr_ang = obj.Kp_ang*error_ang + obj.Ki_ang*obj.integral_ang + obj.Kd_ang*deriv_ang;
 
             % 6. Combina correções para calcular velocidade angular (omega)
-            v = mouse.v_base; % velocidade linear constante
             omega = corr_ang + corr_lat; % soma dos ajustes angular e lateral
             max_w = pi; % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
 
+            % 7. Controle PID MOTOR REDDO COMETTO
+            w_mouse=((mouse.Vr+mouse.vL)/2)/mouse.wheel;
+            wr = mouse.v_base/mouse.wheel; % velocidade linear constante
             % Reduz velocidade linear em curvas muito fechadas para maior estabilidade
             if abs(error_ang) > pi/6
-                v = v * 0.5;
+                wr = wr * 0.5;
             end
+            error_w=wr-w_mouse;
+            obj.integral_motor = obj.integral_motor + error_w * dt;
+            deriv_motor = (error_w - obj.last_error_motor) / dt;
+            obj.last_error_motor = error_w;
+            corr_motor = obj.Kp_motor*error_motor + obj.Ki_motor*obj.integral_motor + obj.Kd_motor*deriv_motor;
+            w=corr_motor;
+            v=w*mouse.wheel;
 
             % Imprime velocidades para depuração
             fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",v,omega);
