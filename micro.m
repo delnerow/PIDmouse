@@ -14,6 +14,7 @@ function micro()
     % Inicialização do robô
     % Constantes
     mouse = struct();
+    mouse.wheel = 0.01;               % Tamanho da roda!
     mouse.L = 16/18;                  % distância entre rodas (1:18 cm)
     mouse.v_base=0.2;               % velocidade padrão, inutilizada por enquanto
     % Variáveis
