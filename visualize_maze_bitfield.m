@@ -2,7 +2,7 @@
 function visualize_maze_bitfield(maze, goal, floodval)
     N = size(maze,1);
     cell_size_cm=18;
-    clf; hold on;
+    
     for r = 1:N
         for c = 1:N
             x = c-1; y = N-r;
@@ -26,8 +26,8 @@ function visualize_maze_bitfield(maze, goal, floodval)
     set(gca, 'XTick', 0:N, 'XTickLabel', 0:cell_size_cm:cell_size_cm*N);
     set(gca, 'YTick', 0:N, 'YTickLabel', 0:cell_size_cm:cell_size_cm*N);
     title(sprintf('Micromouse Maze (%dx%d cells, %dx%d cm cada)', N, N, cell_size_cm, cell_size_cm));
-    hold off;
-    drawnow;
+    %hold off;
+    %drawnow;
 end
 
 

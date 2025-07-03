@@ -110,28 +110,30 @@ function velocidades = vaiFrente(mouse,paredes)
         anglePID.integral = 0;
         anglePID.erro_anterior = 0;
     end
-    dirCor=[pi/2,0,3*pi/2,pi];
-    if abs(mouse.theta-dirCor(mouse.dir+1)) < 2*pi-abs(mouse.theta-dirCor(mouse.dir+1))
-        erro_angle= mouse.theta-dirCor(mouse.dir+1);
+    dirDes=[pi/2,0,3*pi/2,pi];
+    if abs(mouse.theta-dirDes(mouse.dir+1)) < 2*pi-abs(mouse.theta-dirDes(mouse.dir+1))
+        erro_angle= mouse.theta-dirDes(mouse.dir+1);
     else
-        if mouse.theta>dirCor(mouse.dir+1)
-           erro_angle= -(2*pi-abs(mouse.theta-dirCor(mouse.dir+1)));
+        if mouse.theta>dirDes(mouse.dir+1)
+           erro_angle= -(2*pi-abs(mouse.theta-dirDes(mouse.dir+1)));
         else
-            erro_angle= (2*pi-abs(mouse.theta-dirCor(mouse.dir+1)));
+            erro_angle= (2*pi-abs(mouse.theta-dirDes(mouse.dir+1)));
         end
     end
 
-    Kp = 0.5; Ki = 0; Kd = 0;
-    dt = 0.001;  %  passo de simulação
-    mouse.distancia_acumulada = mouse.distancia_acumulada + (mouse.vR + mouse.vL) / 2 * dt;
-    [correcao, distancePID] = pid_simples(1 - mouse.distancia_acumulada, distancePID, dt, Kp, Ki, Kd);
+        Kp = 0.1; Ki = 0; Kd = 0;
+        dt = 0.001;  %  passo de simulação
+        [gira, anglePID] = pid_simples(erro_angle, anglePID, dt, Kp, Ki, Kd);
+        % Só gira, ignora centralização (correcao = 0)
+        % Mouse já está bem alinhado → aplicar PID lateral
+        if(mouse.dir==0 || mouse.dir ==2), erro_centro= mouse.x-(mouse.cell(2)-0.5); 
+        else, erro_centro= 16-mouse.cell(1)+0.5-mouse.y; end
+        Kp = 0.4; Ki = 0; Kd = 0;
+        [correcao, distancePID] = pid_simples(erro_centro, distancePID, dt, Kp, Ki, Kd);
+        velocidades.L = mouse.v_base - correcao + gira;          
+        velocidades.R = mouse.v_base + correcao - gira;
 
-    Kp = 0.1; Ki = 0; Kd = 0;
-    [gira, anglePID] = pid_simples(erro_angle, anglePID, dt, Kp, Ki, Kd);
-    velocidades.L = correcao + gira;          
-    velocidades.R = correcao - gira;
-
-    % fprintf("Velocidades comandadas: \n Left: %f \n Right: %f \n",mouse.vL,mouse.vR);
+    %fprintf("Velocidades comandadas: \n Left: %f \n Right: %f \n",mouse.vL,mouse.vR);
     end
 
 function velocidades=giraDireita(mouse,paredes)
@@ -143,9 +145,36 @@ end
 
 function velocidades=giraEsquerda(mouse,paredes)
     % faz 1/4 de circunferencia, literally
-    w= mouse.v_base;
-    velocidades.L = w*(1-mouse.L); 
-    velocidades.R = w*(1+mouse.L);
+    dirDes=[pi/2,0,3*pi/2,pi];
+    theta_f = dirDes(mouse.dir+1);  % 90° à esquerda
+    delta = [0 1; 1 0; 0 -1; -1 0]; % up, right, down, left
+    celula_alvo = mouse.cell + delta(mouse.dir + 1, :);
+    x_target = celula_alvo(2) - 0.5;
+    y_target = 16-celula_alvo(1) + 0.5;
+    persistent anglePID
+    if isempty(anglePID)
+        anglePID.integral = 0;
+        anglePID.erro_anterior = 0;
+    end
+    persistent distancePID
+    if isempty(distancePID)
+        distancePID.integral = 0;
+        distancePID.erro_anterior = 0;
+    end
+    dt = 0.001;
+    Kp = 0.1; Ki = 0; Kd = 0;
+    erro_theta = atan2(sin(theta_f - mouse.theta), cos(theta_f - mouse.theta));
+    erro_x = x_target - mouse.x;
+    erro_y = y_target - mouse.y;
+    erro_dist = sqrt(erro_x^2 + erro_y^2);
+    [gira, anglePID] = pid_simples(erro_theta, anglePID, dt, Kp, Ki, Kd);
+    Kp = 0.3; Ki = 0; Kd = 0;
+    [v, distancePID] = pid_simples(erro_dist, distancePID, dt, Kp, Ki, Kd);
+    % Limite a velocidade para evitar saturação
+    v = max(min(v, mouse.v_base), 0);  % v_max é velocidade máxima permitida
+
+    velocidades.L = v + gira;
+    velocidades.R = v - gira;
 end
 
 
