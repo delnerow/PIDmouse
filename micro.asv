@@ -33,12 +33,12 @@ function micro()
     % Plotando mouse pela primeira vez
 
     % Polyshape do mouse, para  detectar colisão com parede
-    poly_mouse = mousePolyshape(mouse.x, mouse.y, mouse.theta, mouse.side);
+    poly_mouse = mousePolyshape(mouse.x_real, mouse.y_real, mouse.theta_real, mouse.side);
     h_mouse = plot(ax,poly_mouse, 'FaceColor', 'blue', 'FaceAlpha', 0.4); 
     % Plotar raio do sensor
-    h_ray_f = plot(ax,[mouse.x mouse.x], [mouse.y mouse.y], 'r--'); % frente
-    h_ray_d = plot(ax,[mouse.x mouse.x], [mouse.y mouse.y], 'b--'); % direita
-    h_ray_e = plot(ax,[mouse.x mouse.x], [mouse.y mouse.y], 'g--'); % esquerda
+    h_ray_f = plot(ax,[mouse.x_real mouse.x_real], [mouse.y_real mouse.y_real], 'r--'); % frente
+    h_ray_d = plot(ax,[mouse.x_real mouse.x_real], [mouse.y_real mouse.y_real], 'b--'); % direita
+    h_ray_e = plot(ax,[mouse.x_real mouse.x_real], [mouse.y_real mouse.y_real], 'g--'); % esquerda
     
 
     % Main Loop
@@ -47,7 +47,7 @@ function micro()
 
     % Inicializa controlador híbrido
     ctrl = PIDlookahead();
-    giro = PIDlgiro();
+    giro = PIDgiro();
     
     % Vetor que da boost ao robo quando ve varios comando de linha reta
     consecutivos = obterSequenciaOrdens(ordens);
@@ -66,50 +66,77 @@ function micro()
     while ~isequal(mouse.cell, goal)
         
         % Visualize mouse
-        poly_mouse = mousePolyshape(mouse.x, mouse.y, mouse.theta, mouse.side);
+        poly_mouse = mousePolyshape(mouse.x_real, mouse.y_real, mouse.theta_real, mouse.side);
         h_mouse=visualize_mouse(poly_mouse,mouse,h_mouse);
         % Reta do sensor 
         visualize_ray(mouse,paredes,h_ray_f,h_ray_d,h_ray_e);
 
-        
-
-        
-
+       
         % O boost tem seu pico no meio do trecho, acelerando e desacelerando
         if(trecho==1), anterior=consecutivos(trecho);
         else, anterior = consecutivos(trecho-1);
         end 
-        boost =abs((consecutivos(trecho)+anterior)/2-cellPercorridas);
+        boost = abs((consecutivos(trecho)+anterior)/2-cellPercorridas);
 
         % Debug
-        fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x,mouse.y,mouse.theta/pi*180);
-        fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
+        fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+        %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
+        %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
+        fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
 
         % Chamando o PID
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
         dist_dir = sensorLeitura(mouse, paredes, 'direita');
         dist_f=sensorLeitura(mouse, paredes, 'frente');
         [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, 0.001, dist_esq,dist_dir,dist_f, boost);
-        [mouse.wL_encoder, mouse.wR_encoder] = encoder_simulado(mouse.wL_real, mouse.wR_real, pulsos_por_volta);
-        [wL, wR]= giro.update(mouse, vR,vL);
+        % velocidade angular das rodas (rad/s) -> pulsos acumulados
+        [delta_pulsos_L,delta_pulsos_R] = encoder_simulado(mouse);
+        
+        % [2] Acumula nos encoders simulados (como num robô real)
+        mouse.encoder_L = mouse.encoder_L + delta_pulsos_L;
+        mouse.encoder_R = mouse.encoder_R + delta_pulsos_R;
+        % [3] Estima a velocidade angular da roda com base nos pulsos contados no intervalo
+        mouse.wL_encoder = ((mouse.encoder_L - mouse.encoder_L_prev) * 2*pi) / mouse.pulsos_por_volta / 0.001;
+        mouse.wR_encoder = ((mouse.encoder_R - mouse.encoder_R_prev) * 2*pi) / mouse.pulsos_por_volta / 0.001;
+        
+        % [4] Atualiza o valor anterior (para o próximo delta)
+        mouse.encoder_L_prev = mouse.encoder_L;
+        mouse.encoder_R_prev = mouse.encoder_R;
+
+        [mouse.wL_real, mouse.wR_real]= giro.update(mouse, vR,vL,0.001);
         
 
         % atualizando o Mickey
-        mouse.vR=vR;
-        mouse.vL=vL;
+        mouse.vR_real=mouse.wR_real*mouse.wheel;
+        mouse.vL_real=mouse.wL_real*mouse.wheel;
+        mouse.vR_encoder=mouse.wR_encoder*mouse.wheel;
+        mouse.vL_encoder=mouse.wL_encoder*mouse.wheel;
         curCell = returnCell(N,mouse);
         if ~isequal(curCell,mouse.cell), cellPercorridas=cellPercorridas+1;end
         if(cellPercorridas == consecutivos(trecho)), trecho = trecho+1;end
         mouse.cell=curCell;
         
-        % Mexendo o mouse na animação
-        % --- CINEMÁTICA DIFERENCIAL ---
-        v_media = (mouse.vR + mouse.vL) / 2;
-        w_mouse = (mouse.vR - mouse.vL) / mouse.L;
-        mouse.x = mouse.x + v_media * cos(mouse.theta) * dt;
-        mouse.y = mouse.y + v_media * sin(mouse.theta) * dt;
-        mouse.theta = mouse.theta + w_mouse * dt;
-        mouse.theta = atan2(sin(mouse.theta), cos(mouse.theta));
+        % Mexendo o mouse
+        % --- CINEMÁTICA DIFERENCIAL  REAL ---
+        v_media = (mouse.vR_real + mouse.vL_real) / 2;
+        w_mouse = (mouse.vR_real - mouse.vL_real) / mouse.L;
+        mouse.x_real = mouse.x_real + v_media * cos(mouse.theta_real) * dt;
+        mouse.y_real = mouse.y_real + v_media * sin(mouse.theta_real) * dt;
+        mouse.theta_real = mouse.theta_real + w_mouse * dt;
+        mouse.theta_real = atan2(sin(mouse.theta_real), cos(mouse.theta_real));
+
+        % --- CINEMÁTICA DIFERENCIAL  ENCODER ---
+        v_media = (mouse.vR_encoder  + mouse.vL_encoder ) / 2;
+        w_mouse = (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L;
+        mouse.x_encoder = mouse.x_encoder + v_media * cos(mouse.theta_encoder ) * dt;
+        mouse.y_encoder = mouse.y_encoder  + v_media * sin(mouse.theta_encoder ) * dt;
+        mouse.theta_encoder  = mouse.theta_encoder  + w_mouse * dt;
+        mouse.theta_encoder  = atan2(sin(mouse.theta_encoder ), cos(mouse.theta_encoder ));
+
+        %um problema de cada vez
+        mouse.x_encoder=mouse.x_real;
+        mouse.y_encoder=mouse.y_real;
+        mouse.theta_encoder=mouse.theta_real;
 
         % tempos de frame e da precisão simulação
         pause(0.001);

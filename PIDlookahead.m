@@ -98,7 +98,7 @@ classdef PIDlookahead
             alpha = atan2(sin(alpha), cos(alpha));
 
             % Debug
-            fprintf("target, alpha : %.3f , deg: %.1f\n", rad2deg(atan2(y_target- y, x_target- x)), rad2deg(alpha));
+            % fprintf("target, alpha : %.3f , deg: %.1f\n", rad2deg(atan2(y_target- y, x_target- x)), rad2deg(alpha));
 
             % 2. Cálculo do erro lateral
             % Vetor tangente à curva no ponto alvo é aproximado por diferença entre pontos vizinhos
