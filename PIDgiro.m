@@ -22,8 +22,7 @@ classdef PIDgiro
     methods
         function obj = PIDgiro(PI_motor)
             % Construtor da classe, pode receber lookahead como argumento
-            num_z =PI_motor(1);
-            den_z=PI_motor(2);
+            [num_z, den_z]=PI_motor();
 
         end
 
