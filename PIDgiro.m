@@ -47,11 +47,11 @@ classdef PIDgiro
             wr=vR/mouse.wheel;
             obj.rR=[wr obj.rR(1:3)];
             wR=dot([b0, b1, b2, b3], obj.rR)-dot([a1, a2, a3], obj.yR);
-            obj.yR=[wR, obj.yL(1:2)];
+            obj.yR=[wR, obj.yR(1:2)];
             %fprintf("\nErro esquerdo: %f\nErro direito: %f\n",wL-vL/mouse.wheel, wR-vR/mouse.wheel);
             % Imprime velocidades para depuração
-            wR = max(min(wR, max_w), -max_w);
-            wL = max(min(wL, max_w), -max_w);
+            % wR = max(min(wR, max_w), -max_w);
+            % wL = max(min(wL, max_w), -max_w);
             %fprintf("Erros Giro: \n R: %f \n L: %f \n",error_wR,error_wL);
         end
     end
