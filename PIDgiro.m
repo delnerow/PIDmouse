@@ -28,12 +28,7 @@ classdef PIDgiro
         end
 
         function [wL, wR, obj] = update(obj, mouse, vR, vL)
-            % Atualiza as velocidades linear (v) e angular (omega) do robô com base no estado atual
-            % mouse: da onde tiramos posição e orientação atuais 
-            % xx, yy: vetor de pontos do caminho (path) que o robô deve seguir
-            % dt: intervalo de tempo desde a última chamada
-            % obj: retorna o objeto atualizado (com erros integrados atualizados)
-            % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
+            % Atualiza as velocidades angulares do motor
          
             % 1. Controle PID MOTOR REDDO COMETTO diretto
             w_mouse=mouse.wR;
