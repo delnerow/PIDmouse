@@ -45,15 +45,15 @@ function [num_z, den_z] = PI_motor()
     tr=requisitos.tr;
     ksi=-log(mp)/sqrt(pi^2+log(mp)*log(mp));
     wn=(pi-acos(ksi))/(tr*sqrt(1-ksi^2));
-    ki0=wn^2*J*R/kt;
-    kp0=(2*wn*ksi*J*R-R*B-kt^2)/kt;
+    ki0=wn^2*J*R/kt
+    kp0=(2*wn*ksi*J*R-R*B-kt^2)/kt
     x0=[kp0 ki0];
     
     %dado o chute inicial, otimizar
     F = @(x) funcaoCusto(planta, requisitos, x);
     x=fminsearch(F, x0);
-    kp=x(1);
-    ki=x(2);
+    kp=x(1)
+    ki=x(2)
     
     % prints de debug
     s=tf('s');
@@ -69,6 +69,6 @@ function [num_z, den_z] = PI_motor()
     % S=stepinfo(Gz, 'RiseTimeLimits', [0 1]);
     % fprintf("Overshoot: %f\nRiseTime: %f\n", S.Overshoot, S.RiseTime);
     % figure
-    % step(Gz); grid minor;
+    % step(Gz*3); grid minor;
 end
 

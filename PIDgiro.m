@@ -64,7 +64,7 @@ classdef PIDgiro
             
             % Imprime velocidades para depuração
             fprintf("Giros comandados: \n R: %f \n L: %f \n",wR,wL);
-            fprintf("Erros Giro: \n R: %f \n L: %f \n",error_wR,error_wL);
+            %fprintf("Erros Giro: \n R: %f \n L: %f \n",error_wR,error_wL);
         end
     end
 end

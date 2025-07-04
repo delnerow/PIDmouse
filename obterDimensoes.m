@@ -11,7 +11,7 @@ function [start,goal,mouse]= obterDimensoes()
     mouse.side=0.5;                % Diametro das rodas
     
 
-    mouse.v_base=0.5;               % velocidade padrão
+    mouse.v_base=1;               % velocidade padrão
     % Variáveis
     mouse.distancia_acumulada = 0;  % um odometro resetado a cada célular
     mouse.wL_real =0;
