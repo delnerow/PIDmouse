@@ -16,11 +16,39 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
         o3 = ordens(i+2);
         if o2~=0 && o3==o2
             % Caso do U-turn, duas curvas no mesmo sentido
+            raio = cellSize / 2;
             p0 = pos(i,:);
             p1 = pos(i+1,:);
             p2 = pos(i+2,:);
-           
-            [x_arc, y_arc] = interpolar_arco(p0, p1, p2, cellSize);
+            centro = p1+ (p2-p1)/2+(p0-p1)/2;
+            v = (p1-p0)/2;
+
+            v1 = p1 - p0;  % vetor da entrada
+            v2 = p2 - p1;  % vetor da saída
+            z = v1(1)*v2(2) - v1(2)*v2(1);  % produto vetorial 2D (z-component)
+
+            theta1 = atan2(p0(2)+v(2)-centro(2), p0(1)+v(1)-centro(1));
+            theta2 = atan2(p2(2)-v(2)-centro(2), p2(1)-v(1)-centro(1));
+            
+            % gerar arco suave de 180°
+            % decidir sentido (horário ou anti)
+             if z > 0
+            % anti-horário
+            if theta2 < theta1
+                theta2 = theta2 + 2*pi;
+            end
+            theta = linspace(theta1, theta2, 20);
+            else
+                % horário
+                if theta2 > theta1
+                    theta2 = theta2 - 2*pi;
+                end
+                theta = linspace(theta1, theta2, 20);
+            end
+            
+            x_arc = centro(1) + raio * cos(theta);
+            y_arc = centro(2) + raio * sin(theta);
+        
             xx = [xx x_arc];
             yy = [yy y_arc];
         
@@ -65,36 +93,7 @@ function pos = cell_to_world(cells, cellSize)
     pos = [x, y];
 end
 function [xx, yy] = interpolar_arco(p0,p1,p2,cellSize)
- raio = cellSize / 2;
-            
-            centro = p1+ (p2-p1)/2+(p0-p1)/2;
-            v = (p1-p0)/2;
 
-            v1 = p1 - p0;  % vetor da entrada
-            v2 = p2 - p1;  % vetor da saída
-            z = v1(1)*v2(2) - v1(2)*v2(1);  % produto vetorial 2D (z-component)
-
-            theta1 = atan2(p0(2)+v(2)-centro(2), p0(1)+v(1)-centro(1));
-            theta2 = atan2(p2(2)-v(2)-centro(2), p2(1)-v(1)-centro(1));
-            
-            % gerar arco suave de 180°
-            % decidir sentido (horário ou anti)
-             if z > 0
-            % anti-horário
-            if theta2 < theta1
-                theta2 = theta2 + 2*pi;
-            end
-            theta = linspace(theta1, theta2, 20);
-            else
-                % horário
-                if theta2 > theta1
-                    theta2 = theta2 - 2*pi;
-                end
-                theta = linspace(theta1, theta2, 20);
-            end
-            
-            xx = centro(1) + raio * cos(theta);
-            yy = centro(2) + raio * sin(theta);
 end
 
 

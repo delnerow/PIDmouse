@@ -1,2 +1,0 @@
-function obterDimensoes()
-end

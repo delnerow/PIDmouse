@@ -123,15 +123,13 @@ function velocidades = vaiFrente(mouse,paredes)
 
         Kp = 0.1; Ki = 0; Kd = 0;
         dt = 0.001;  %  passo de simulação
+        mouse.distancia_acumulada = mouse.distancia_acumulada + (mouse.vR + mouse.vL) / 2 * dt;
+        [correcao, distancePID] = pid_simples(1 - mouse.distancia_acumulada, distancePID, dt, Kp, Ki, Kd);
+    
+        Kp = 0.1; Ki = 0; Kd = 0;
         [gira, anglePID] = pid_simples(erro_angle, anglePID, dt, Kp, Ki, Kd);
-        % Só gira, ignora centralização (correcao = 0)
-        % Mouse já está bem alinhado → aplicar PID lateral
-        if(mouse.dir==0 || mouse.dir ==2), erro_centro= mouse.x-(mouse.cell(2)-0.5); 
-        else, erro_centro= 16-mouse.cell(1)+0.5-mouse.y; end
-        Kp = 0.4; Ki = 0; Kd = 0;
-        [correcao, distancePID] = pid_simples(erro_centro, distancePID, dt, Kp, Ki, Kd);
-        velocidades.L = mouse.v_base - correcao + gira;          
-        velocidades.R = mouse.v_base + correcao - gira;
+        velocidades.L = correcao + gira;          
+        velocidades.R = correcao - gira;
 
     %fprintf("Velocidades comandadas: \n Left: %f \n Right: %f \n",mouse.vL,mouse.vR);
     end

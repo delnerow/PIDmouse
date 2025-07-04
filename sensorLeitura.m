@@ -1,59 +1,87 @@
 function dist = sensorLeitura(robo, paredes, lado)
     % lado = 'esquerda' ou 'direita'
-
-    max_dist = 1.0; % alcance máximo do sensor
-    N = 100; % resolução do "raio"
-    d = linspace(0, max_dist, N);
+    paredes=obterSegmentosDeHV(paredes);
+    alcance = 1.0; % alcance máximo do sensor
 
     if strcmp(lado, 'direita')
-        ang = robo.theta - pi/2;
+        theta_s  = robo.theta - pi/2;
     elseif strcmp(lado, 'esquerda')
-        ang = robo.theta + pi/2;
+        theta_s  = robo.theta + pi/2;
     else
-        ang = robo.theta;
+        theta_s  = robo.theta;
     end
 
     % Ponto inicial do raio
     x0 = robo.x;
     y0 = robo.y;
 
-    % Reta do sensor
-    x_line = x0 + d * cos(ang);
-    y_line = y0 + d * sin(ang);
+    x1 = x0 + alcance * cos(theta_s);
+    y1 = y0 + alcance * sin(theta_s);
 
-    % Testa colisão ponto a ponto
-    for i = 1:N
-        if verificaColisao(x_line(i), y_line(i), paredes)
-            dist = d(i);
-            return;
+    min_dist = inf;
+
+    for k = 1:size(paredes,1)
+        [intersect, xi, yi] = segmentIntersect( ...
+            x0, y0, x1, y1, ...
+            paredes(k,1), paredes(k,2), paredes(k,3), paredes(k,4));
+        
+        if intersect
+            d = sqrt((xi - x0)^2 + (yi - y0)^2);
+            if d < min_dist
+                min_dist = d;
+            end
         end
     end
-    dist = max_dist;
+
+    if isfinite(min_dist)
+        dist = min_dist;
+    else
+        dist = alcance;
+    end
 end
 
 
-function colidiu = verificaColisao(x, y, paredes)
-    colidiu = false;
 
-    % Verifica se x,y está perto de alguma parede vertical
-    for i = 1:size(paredes.V,1)
-        xv = paredes.V(i,1);
-        y1 = paredes.V(i,2);
-        y2 = paredes.V(i,3);
-        if abs(x - xv) < 0.01 && y >= min(y1,y2) && y <= max(y1,y2)
-            colidiu = true;
-            return;
-        end
+function [intersects, xi, yi] = segmentIntersect(x1,y1,x2,y2, x3,y3,x4,y4)
+    % Vetores das retas
+    dx1 = x2 - x1; dy1 = y2 - y1;
+    dx2 = x4 - x3; dy2 = y4 - y3;
+
+    denom = dx1 * dy2 - dy1 * dx2;
+
+    if denom == 0
+        intersects = false; xi = nan; yi = nan; return; % Paralelas
     end
 
-    % Verifica se x,y está perto de alguma parede horizontal
-    for i = 1:size(paredes.H,1)
-        yv = paredes.H(i,1);
-        x1 = paredes.H(i,2);
-        x2 = paredes.H(i,3);
-        if abs(y - yv) < 0.01 && x >= min(x1,x2) && x <= max(x1,x2)
-            colidiu = true;
-            return;
-        end
+    dx = x3 - x1; dy = y3 - y1;
+    t = (dx * dy2 - dy * dx2) / denom;
+    u = (dx * dy1 - dy * dx1) / denom;
+
+    if t >= 0 && t <= 1 && u >= 0 && u <= 1
+        xi = x1 + t * dx1;
+        yi = y1 + t * dy1;
+        intersects = true;
+    else
+        xi = nan; yi = nan;
+        intersects = false;
+    end
+end
+function segmentos = obterSegmentosDeHV(paredes)
+    segmentos = [];
+
+    % Horizontais
+    for i = 1:size(paredes.H, 1)
+        y = paredes.H(i, 1);
+        x0 = paredes.H(i, 2);
+        x1 = paredes.H(i, 3);
+        segmentos(end+1, :) = [x0, y, x1, y];
+    end
+
+    % Verticais
+    for i = 1:size(paredes.V, 1)
+        x = paredes.V(i, 1);
+        y0 = paredes.V(i, 2);
+        y1 = paredes.V(i, 3);
+        segmentos(end+1, :) = [x, y0, x, y1];
     end
 end

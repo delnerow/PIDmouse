@@ -2,13 +2,13 @@
 classdef PIDlookahead
     properties
         % Ganhos do controlador PID para correção lateral (desvio lateral do robô)
-        Kp_lat = 0;  % ganho proporcional lateral
+        Kp_lat = 3;  % ganho proporcional lateral
         Ki_lat = 0;  % ganho integral lateral
         Kd_lat = 0;  % ganho derivativo lateral
 
         % Ganhos do controlador PID para correção angular (erro de orientação do robô)
-        Kp_ang = 2;  % ganho proporcional angular
-        Ki_ang = 0;  % ganho integral angular
+        Kp_ang = 5;  % ganho proporcional angular
+        Ki_ang = 0.5;  % ganho integral angular
         Kd_ang = 0;  % ganho derivativo angular
 
         % Estados para cálculo do termo integral e derivativo lateral
@@ -21,7 +21,7 @@ classdef PIDlookahead
 
         % Índice do último ponto do caminho que o robô deve perseguir
         idx_last = 1;
-
+        idx_boost = [];
         % Distância lookahead para determinar o ponto alvo no caminho
         lookahead = 0.5; % unidade pode ser mm ou cm, conforme escala do ambiente
     end
@@ -34,23 +34,28 @@ classdef PIDlookahead
             end
         end
 
-        function [v, omega, obj] = update(obj, mouse, xx, yy, dt)
+        function [v, omega, obj] = update(obj, mouse, xx, yy, dt, s_left,s_right,s_front, boost)
             % Atualiza as velocidades linear (v) e angular (omega) do robô com base no estado atual
             % x, y, theta: posição e orientação atuais do mouse 
             % xx, yy: vetor de pontos do caminho (path) que o robô deve seguir
             % dt: intervalo de tempo desde a última chamada
             % obj: retorna o objeto atualizado (com erros integrados atualizados)
+            % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
+         
             x=mouse.x;
             y=mouse.y;
             theta=mouse.theta;
-            % 1. Calcular a distância do robô para todos os pontos do
-            % caminho, Pursuit
+
+            %as vezes ta muito rapido... ir aumentado e mudando os Ganhos
+            boost=max(boost,2);
+            v = mouse.v_base * boost ; % velocidade linear constante
+
+            % 1. Calcular a distância do robô para todos os pontos do caminho, Pursuit
 
             % Número total de pontos no caminho
             N = length(xx);
 
-            % Índices para buscar pontos à frente do último índice já
-            % perseguido ( e não perseguir em ré...)
+            % Índices para buscar pontos à frente do último índice já perseguido ( e não perseguir em ré...)
             idxs = obj.idx_last:N;
 
             % Vetores das posições dos pontos à frente em relação ao robô
@@ -134,17 +139,35 @@ classdef PIDlookahead
             obj.last_error_ang = error_ang;
             corr_ang = obj.Kp_ang*error_ang + obj.Ki_ang*obj.integral_ang + obj.Kd_ang*deriv_ang;
 
-            % 6. Combina correções para calcular velocidade angular (omega)
-            v = mouse.v_base; % velocidade linear constante
-            omega = corr_ang + corr_lat; % soma dos ajustes angular e lateral
-            max_w = pi; % limita velocidade angular máxima (rad/s)
-            omega = max(min(omega, max_w), -max_w);
-
+            
             % Reduz velocidade linear em curvas muito fechadas para maior estabilidade
             if abs(error_ang) > pi/6
                 v = v * 0.5;
             end
+            
 
+            % 6. Correção por sensores de parede ===
+            wall_thresh = 0.1; % 5 cm distância mínima aceitável
+            repulsion_gain = 1.0;
+            
+            corr_wall = 0;
+            
+            if s_left < wall_thresh
+                corr_wall = corr_wall + repulsion_gain * (wall_thresh - s_left);
+            end
+            if s_right < wall_thresh
+                corr_wall = corr_wall - repulsion_gain * (wall_thresh - s_right);
+            end
+            if s_front < wall_thresh
+                % Reduz velocidade se tem parede à frente
+                v = v * 0.5;
+            end
+
+            % 7. Combina correções para calcular velocidade angular (omega)
+            omega = corr_ang + corr_lat + corr_wall; % soma dos ajustes angular e lateral
+            max_w = pi; % limita velocidade angular máxima (rad/s)
+            omega = max(min(omega, max_w), -max_w);
+            
             % Imprime velocidades para depuração
             fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",v,omega);
         end
