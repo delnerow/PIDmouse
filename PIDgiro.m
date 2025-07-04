@@ -10,14 +10,7 @@ classdef PIDgiro
         %numerador e denominador no espaço ZETA GUNDAM
         num_z=zeros(1,4);
         den_z=zeros(1,4);
-
-        % Estados para cálculo do termo integral e derivativo do motor direito
-        integral_dir = 0;      % soma dos erros angulares para termo integral
-        last_error_dir = 0;    % último erro angular para derivada
-
-         % Estados para cálculo do termo integral e derivativo do motor esquerdo
-        integral_esq = 0;      % soma dos erros angulares para termo integral
-        last_error_esq = 0;    % último erro angular para derivada
+        
     end
 
     methods
