@@ -1,7 +1,7 @@
 % Micromouse Maze Simulation with Flood Fill Integration
 % Uses bitfield maze encoding, flood fill logic, and dynamic wall checking.
 function micro()
-    clf; 
+    close all; 
     % Maze in bitfield format (1D, row-major order, uint8).
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
     
@@ -79,20 +79,22 @@ function micro()
         boost = abs((consecutivos(trecho)+anterior)/2-cellPercorridas);
 
         % Debug
-        fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+        %fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
         %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
         %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
         fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
+        fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
 
         % Chamando o PID
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
         dist_dir = sensorLeitura(mouse, paredes, 'direita');
         dist_f=sensorLeitura(mouse, paredes, 'frente');
+
         [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, 0.001, dist_esq,dist_dir,dist_f, boost);
         % velocidade angular das rodas (rad/s) -> pulsos acumulados
         [delta_pulsos_L,delta_pulsos_R] = encoder_simulado(mouse);
         
-        % [2] Acumula nos encoders simulados (como num robô real)
+        % [2] Acumula nos encoders simulados
         mouse.encoder_L = mouse.encoder_L + delta_pulsos_L;
         mouse.encoder_R = mouse.encoder_R + delta_pulsos_R;
         % [3] Estima a velocidade angular da roda com base nos pulsos contados no intervalo
