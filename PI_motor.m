@@ -71,7 +71,7 @@ function [num_z, den_z] = PI_motor()
     % % figure
     % dt = 0.001;
     % t = 0:dt:1;   % tempo maior para ver resposta completa
-    % u = ones(size(t));  % entrada degrau
+    % u = [ones(1,floor(length(t)/3)) 2*ones(1,floor(length(t)/3)) ones(1,floor(length(t)/3)+length(t)-3*floor(length(t)/3))];
     % num = num_z;
     % den = den_z;
     % 
@@ -106,5 +106,4 @@ function [num_z, den_z] = PI_motor()
     % legend('filter','manual');
     % title('Comparação: filter vs simulação manual');
     % hold on
-    % step(Gz, t)
 end

@@ -65,17 +65,12 @@ function micro()
     
 
     while ~isequal(mouse.cell, goal)
-        
-       
 
-       
         % O boost tem seu pico no meio do trecho, acelerando e desacelerando
         if(trecho==1), anterior=consecutivos(trecho);
         else, anterior = consecutivos(trecho-1);
         end 
         boost = max(abs((consecutivos(trecho)+anterior)/2-cellPercorridas),1);
-
-        
 
         % Chamando o PID
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
