@@ -65,17 +65,12 @@ function micro()
     
 
     while ~isequal(mouse.cell, goal)
-        
-       
 
-       
         % O boost tem seu pico no meio do trecho, acelerando e desacelerando
         if(trecho==1), anterior=consecutivos(trecho);
         else, anterior = consecutivos(trecho-1);
         end 
         boost = abs((consecutivos(trecho)+anterior)/2-cellPercorridas);
-
-        
 
         % Chamando o PID
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
@@ -97,7 +92,7 @@ function micro()
         mouse.encoder_L_prev = mouse.encoder_L;
         mouse.encoder_R_prev = mouse.encoder_R;
 
-        [mouse.wL_real, mouse.wR_real]= giro.update(mouse, vR,vL,dt);
+        [mouse.wL_real, mouse.wR_real, giro]= giro.update(mouse, vR,vL,dt);
         
 
         % atualizando o Mickey
