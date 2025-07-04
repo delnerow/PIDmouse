@@ -98,7 +98,7 @@ classdef PIDlookahead
             alpha = atan2(sin(alpha), cos(alpha));
 
             % Debug
-            % fprintf("target, alpha : %.3f , deg: %.1f\n", rad2deg(atan2(y_target- y, x_target- x)), rad2deg(alpha));
+            %fprintf("target, alpha : %.3f , deg: %.1f\n", rad2deg(atan2(y_target- y, x_target- x)), rad2deg(alpha));
 
             % 2. Cálculo do erro lateral
             % Vetor tangente à curva no ponto alvo é aproximado por diferença entre pontos vizinhos
@@ -141,11 +141,6 @@ classdef PIDlookahead
             deriv_ang = (error_ang - obj.last_error_ang) / dt;
             obj.last_error_ang = error_ang;
             corr_ang = obj.Kp_ang*error_ang + obj.Ki_ang*obj.integral_ang + obj.Kd_ang*deriv_ang;
-
-            % 6. Combina correções para calcular velocidade angular (omega)
-            omega = corr_ang + corr_lat; % soma dos ajustes angular e lateral
-            max_w = pi; % limita velocidade angular máxima (rad/s)
-            omega = max(min(omega, max_w), -max_w);
 
            
             % 7. Correção por sensores de parede ===

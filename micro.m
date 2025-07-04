@@ -5,7 +5,7 @@ function micro()
     % Maze in bitfield format (1D, row-major order, uint8).
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
     
-    maze_grid=load_maze_bin("mazes/song-2.maz");
+    maze_grid=load_maze_bin("mazes/yama7.maz");
 
     N=size(maze_grid,1);
     [start,goal,mouse]=obterDimensoes();
@@ -42,7 +42,7 @@ function micro()
     
 
     % Main Loop
-    dt=0.001;
+    dt=0.01;
     t=0; %tempo inicial
     tic; 
 
@@ -73,7 +73,7 @@ function micro()
         if(trecho==1), anterior=consecutivos(trecho);
         else, anterior = consecutivos(trecho-1);
         end 
-        boost = abs((consecutivos(trecho)+anterior)/2-cellPercorridas);
+        boost = max(abs((consecutivos(trecho)+anterior)/2-cellPercorridas),1);
 
         
 
@@ -82,7 +82,7 @@ function micro()
         dist_dir = sensorLeitura(mouse, paredes, 'direita');
         dist_f=sensorLeitura(mouse, paredes, 'frente');
 
-        [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, dt, dist_esq,dist_dir,dist_f, boost);
+        [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, dt, dist_esq,dist_dir,dist_f, 1);
         % velocidade angular das rodas (rad/s) -> pulsos acumulados
         [delta_pulsos_L,delta_pulsos_R] = encoder_simulado(mouse);
         
@@ -97,7 +97,7 @@ function micro()
         mouse.encoder_L_prev = mouse.encoder_L;
         mouse.encoder_R_prev = mouse.encoder_R;
 
-        [mouse.wL_real, mouse.wR_real]= giro.update(mouse, vR,vL,dt);
+        [mouse.wL_real, mouse.wR_real, giro]= giro.update(mouse, vR,vL,dt);
         
 
         % atualizando o Mickey
@@ -135,14 +135,14 @@ function micro()
         % tempos de frame e da precisão simulação
         t=t+1;
         
-        if mod(t, 15) == 0
+        if mod(t, 1) == 0
             % Visualize mouse
             poly_mouse = mousePolyshape(mouse.x_real, mouse.y_real, mouse.theta_real, mouse.side);
             h_mouse=visualize_mouse(poly_mouse,mouse,h_mouse);
             % Reta do sensor 
             visualize_ray(mouse,paredes,h_ray_f,h_ray_d,h_ray_e);
             % Debug
-            %fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+            fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
             %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
             %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
             fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);

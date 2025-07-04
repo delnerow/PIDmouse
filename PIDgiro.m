@@ -29,7 +29,7 @@ classdef PIDgiro
             % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
          
             % 1. Controle PID MOTOR REDDO COMETTO diretto
-            %max_cmd = 10; % ou algo realista em rad/s
+            max_w = 100; % ou algo realista em rad/s
             num=obj.num_z;
             den=obj.den_z;
             UR=obj.uR;
@@ -89,7 +89,8 @@ classdef PIDgiro
             obj.yL=YL;
             
             % Imprime velocidades para depuração
-            
+            wR = max(min(wR, max_w), -max_w);
+            wL = max(min(wL, max_w), -max_w);
             %fprintf("Erros Giro: \n R: %f \n L: %f \n",error_wR,error_wL);
         end
     end
