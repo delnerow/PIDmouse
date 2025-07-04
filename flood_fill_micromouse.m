@@ -1,5 +1,5 @@
 function floodval = flood_fill_micromouse(maze, goal, reflood_flag, start)
-% Translated from your C logic (see previous message)
+% Translated from C logic 
 N = size(maze,1);
 LARGEVAL = 255;
 

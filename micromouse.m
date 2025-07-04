@@ -1,16 +1,13 @@
-% Micromouse Maze Simulation with Flood Fill Integration
-% Uses bitfield maze encoding, flood fill logic, and dynamic wall checking.
-function micro()
-    close all; clc;
-    % Maze in bitfield format (1D, row-major order, uint8).
+function micromouse(maze)
+    % Maze no formato bitfield.
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
     
-    maze_grid=load_maze_bin("mazes/yama7.maz");
+    maze_grid=load_maze_bin("mazes/"+maze+".maz");
 
     N=size(maze_grid,1);
     [start,goal,mouse]=obterDimensoes();
     
-    % Obter paredes do binario, plotada e nela os sensores detectam
+    % Obter paredes do binario, ela os sensores detectam
     paredes = obterParedes(maze_grid);
 
     % Polyshape específica pra detectar colisão com mouse
@@ -40,7 +37,6 @@ function micro()
     h_ray_d = plot(ax,[mouse.x_real mouse.x_real], [mouse.y_real mouse.y_real], 'b--'); % direita
     h_ray_e = plot(ax,[mouse.x_real mouse.x_real], [mouse.y_real mouse.y_real], 'g--'); % esquerda
     
-
     % Main Loop
     dt=0.01;
     t=0; %tempo inicial
@@ -51,47 +47,43 @@ function micro()
     giro = PIDgiro();
     
     % Vetor que da boost ao robo quando ve varios comando de linha reta
-    consecutivos = obterSequenciaOrdens(ordens);
-    % Em qual trecho de consecutivos esta
-    trecho=1;
-    % quantas celulas do trecho total (curva) percorreu
-    cellPercorridas=0;
+    consecutivos = obterSequenciaOrdens(ordens); 
+    trecho=1;           % Em qual trecho de consecutivos esta
+    cellPercorridas=0;  % quantas celulas do trecho total (curva) percorreu
 
     % Stack de celulas vira curva
     [xx, yy] = path_to_line(path,ordens, 1,ax);
 
     % colidiu ou não
-    colidiu = false;
+    % colidiu = false;
     
 
     while ~isequal(mouse.cell, goal)
 
-        % O boost tem seu pico no meio do trecho, acelerando e desacelerando
-        if(trecho==1), anterior=consecutivos(trecho);
-        else, anterior = consecutivos(trecho-1);
-        end 
-        boost = max(abs((consecutivos(trecho)+anterior)/2-cellPercorridas),1);
+        boost = max(consecutivos(trecho)-cellPercorridas,1);
 
-        % Chamando o PID
+        % Obtendo leitura dos sensores
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
         dist_dir = sensorLeitura(mouse, paredes, 'direita');
         dist_f=sensorLeitura(mouse, paredes, 'frente');
 
-        [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, dt, dist_esq,dist_dir,dist_f, 1);
-        % velocidade angular das rodas (rad/s) -> pulsos acumulados
-        [delta_pulsos_L,delta_pulsos_R] = encoder_simulado(mouse);
+        % Chamando o PID
+        [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, dt, dist_esq,dist_dir,dist_f, boost,ax);
         
-        % [2] Acumula nos encoders simulados
+        % Encoder
+        [delta_pulsos_L,delta_pulsos_R] = encoder_simulado(mouse);  % velocidade angular das rodas (rad/s) -> pulsos acumulados
+        
+        % [1] Acumula nos encoders simulados
         mouse.encoder_L = mouse.encoder_L + delta_pulsos_L;
         mouse.encoder_R = mouse.encoder_R + delta_pulsos_R;
-        % [3] Estima a velocidade angular da roda com base nos pulsos contados no intervalo
+        % [2] Estima a velocidade angular da roda com base nos pulsos contados no intervalo
         mouse.wL_encoder = ((mouse.encoder_L - mouse.encoder_L_prev) * 2*pi) / mouse.pulsos_por_volta / dt;
         mouse.wR_encoder = ((mouse.encoder_R - mouse.encoder_R_prev) * 2*pi) / mouse.pulsos_por_volta / dt;
-        
-        % [4] Atualiza o valor anterior (para o próximo delta)
+        % [3] Atualiza o valor anterior (para o próximo delta)
         mouse.encoder_L_prev = mouse.encoder_L;
         mouse.encoder_R_prev = mouse.encoder_R;
-
+        
+        % Obtendo velocidades angulares das rodas
         [mouse.wL_real, mouse.wR_real, giro]= giro.update(mouse, vR,vL,dt);
         
 
@@ -106,7 +98,7 @@ function micro()
         mouse.cell=curCell;
         
         % Mexendo o mouse
-        % --- CINEMÁTICA DIFERENCIAL  REAL ---
+        % --- CINEMÁTICA DIFERENCIAL REAL ---
         v_media = (mouse.vR_real + mouse.vL_real) / 2;
         w_mouse = (mouse.vR_real - mouse.vL_real) / mouse.L;
         mouse.x_real = mouse.x_real + v_media * cos(mouse.theta_real) * dt;
@@ -114,7 +106,7 @@ function micro()
         mouse.theta_real = mouse.theta_real + w_mouse * dt;
         mouse.theta_real = atan2(sin(mouse.theta_real), cos(mouse.theta_real));
 
-        % --- CINEMÁTICA DIFERENCIAL  ENCODER ---
+        % --- CINEMÁTICA DIFERENCIAL ENCODER ---
         v_media = (mouse.vR_encoder  + mouse.vL_encoder ) / 2;
         w_mouse = (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L;
         mouse.x_encoder = mouse.x_encoder + v_media * cos(mouse.theta_encoder ) * dt;
@@ -122,14 +114,13 @@ function micro()
         mouse.theta_encoder  = mouse.theta_encoder  + w_mouse * dt;
         mouse.theta_encoder  = atan2(sin(mouse.theta_encoder ), cos(mouse.theta_encoder ));
 
-        %um problema de cada vez
+        % um problema de cada vez
         mouse.x_encoder=mouse.x_real;
         mouse.y_encoder=mouse.y_real;
         mouse.theta_encoder=mouse.theta_real;
 
-        % tempos de frame e da precisão simulação
+        % tempos de frame
         t=t+1;
-        
         if mod(t, 1) == 0
             % Visualize mouse
             poly_mouse = mousePolyshape(mouse.x_real, mouse.y_real, mouse.theta_real, mouse.side);
@@ -139,7 +130,7 @@ function micro()
             % Debug
             fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
             %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
-            %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
+            fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
             fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
             fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
             fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
@@ -165,8 +156,7 @@ function micro()
         %end
     end
 
-    % Final visualization
-    
+    % Final
     title(sprintf('Terminou em %f segundos!',toc));
 end
 
