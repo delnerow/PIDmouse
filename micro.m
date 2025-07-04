@@ -47,7 +47,7 @@ function micro()
 
     % Inicializa controlador híbrido
     ctrl = PIDlookahead();
-    giro = PIDgiro([2 4]);
+    giro = PIDgiro();
     
     % Vetor que da boost ao robo quando ve varios comando de linha reta
     consecutivos = obterSequenciaOrdens(ordens);
@@ -71,10 +71,7 @@ function micro()
         % Reta do sensor 
         visualize_ray(mouse,paredes,h_ray_f,h_ray_d,h_ray_e);
 
-        
-
-        
-
+       
         % O boost tem seu pico no meio do trecho, acelerando e desacelerando
         if(trecho==1), anterior=consecutivos(trecho);
         else, anterior = consecutivos(trecho-1);
@@ -83,14 +80,29 @@ function micro()
 
         % Debug
         fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+        %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
         fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
+        fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
 
         % Chamando o PID
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
         dist_dir = sensorLeitura(mouse, paredes, 'direita');
         dist_f=sensorLeitura(mouse, paredes, 'frente');
         [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, 0.001, dist_esq,dist_dir,dist_f, boost);
-        [mouse.wL_encoder, mouse.wR_encoder] = encoder_simulado(mouse);
+        % velocidade angular das rodas (rad/s) -> pulsos acumulados
+        [delta_pulsos_L,delta_pulsos_R] = encoder_simulado(mouse);
+        
+        % [2] Acumula nos encoders simulados (como num robô real)
+        mouse.encoder_L = mouse.encoder_L + delta_pulsos_L;
+        mouse.encoder_R = mouse.encoder_R + delta_pulsos_R;
+        % [3] Estima a velocidade angular da roda com base nos pulsos contados no intervalo
+        mouse.wL_encoder = ((mouse.encoder_L - mouse.encoder_L_prev) * 2*pi) / mouse.pulsos_por_volta / 0.001;
+        mouse.wR_encoder = ((mouse.encoder_R - mouse.encoder_R_prev) * 2*pi) / mouse.pulsos_por_volta / 0.001;
+        
+        % [4] Atualiza o valor anterior (para o próximo delta)
+        mouse.encoder_L_prev = mouse.encoder_L;
+        mouse.encoder_R_prev = mouse.encoder_R;
+
         [mouse.wL_real, mouse.wR_real]= giro.update(mouse, vR,vL,0.001);
         
 
@@ -120,6 +132,11 @@ function micro()
         mouse.y_encoder = mouse.y_encoder  + v_media * sin(mouse.theta_encoder ) * dt;
         mouse.theta_encoder  = mouse.theta_encoder  + w_mouse * dt;
         mouse.theta_encoder  = atan2(sin(mouse.theta_encoder ), cos(mouse.theta_encoder ));
+
+        %um problema de cada vez
+        mouse.x_encoder=mouse.x_real;
+        mouse.y_encoder=mouse.y_real;
+        mouse.theta_encoder=mouse.theta_real;
 
         % tempos de frame e da precisão simulação
         pause(0.001);

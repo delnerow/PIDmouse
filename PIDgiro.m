@@ -14,7 +14,7 @@ classdef PIDgiro
     end
 
     methods
-        function obj = PIDgiro(PI_motor)
+        function obj = PIDgiro()
             % Construtor da classe, pode receber lookahead como argumento
             [obj.num_z, obj.den_z]=PI_motor();
 
@@ -29,6 +29,7 @@ classdef PIDgiro
             % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
          
             % 1. Controle PID MOTOR REDDO COMETTO diretto
+            max_cmd = 10; % ou algo realista em rad/s
             w_mouse=mouse.wR_encoder;
             wr = vR/mouse.wheel; % velocidade linear constante
 
@@ -39,6 +40,9 @@ classdef PIDgiro
                        obj.den_z(2)*obj.wlR(2)-obj.den_z(3)*obj.wlR(3)-...
                        obj.den_z(4)*obj.wlR(4);
             wR=corr_motor;
+            
+            wR = min(abs(wR), max_cmd);
+            
             obj.wlR=[corr_motor, obj.wlR(1:3)]; %atualizando histórico de comandos
 
            
@@ -54,8 +58,9 @@ classdef PIDgiro
                        obj.den_z(2)*obj.wlL(2)-obj.den_z(3)*obj.wlL(3)-...
                        obj.den_z(4)*obj.wlL(4);
             wL=corr_motor;
+            wL = min(abs(wL), max_cmd);
             obj.wlL=[corr_motor, obj.wlL(1:3)]; %atualizando histórico de comandos
-
+            
             % Imprime velocidades para depuração
             fprintf("Giros comandados: \n R: %f \n L: %f \n",wR,wL);
         end
