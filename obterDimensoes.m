@@ -27,9 +27,9 @@ function [start,goal,mouse]= obterDimensoes()
     
     mouse.pulsos_por_volta = 360;
     mouse.encoder_L = 0;
-    mouse.encoder_R = 0;
-    mouse.encoder_L_prev = 0;
-    mouse.encoder_R_prev = 0;
+        mouse.encoder_R = 0;
+        mouse.encoder_L_prev = 0;
+        mouse.encoder_R_prev = 0;
     mouse.wL_encoder =0;
     mouse.wR_encoder=0;
     mouse.vL_encoder = 0;                   % velocidade da roda esquerda (m/s)

@@ -170,8 +170,8 @@ classdef PIDlookahead
             omega = corr_ang + corr_lat + corr_wall; % soma dos ajustes angular e lateral
             max_w = pi; % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
-            vR=v +omega*mouse.L/2;
-            vL=v -omega*mouse.L/2; 
+            vR=v/2 +omega*mouse.L/2;
+            vL=v/2 -omega*mouse.L/2; 
             
             % Imprime velocidades para depuração
             fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",v,omega);
