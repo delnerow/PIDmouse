@@ -87,11 +87,11 @@ function micro()
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
         dist_dir = sensorLeitura(mouse, paredes, 'direita');
         dist_f=sensorLeitura(mouse, paredes, 'frente');
-        [v, omega, ctrl] = ctrl.update(mouse, xx, yy, 0.001, dist_esq,dist_dir,dist_f, boost);
+        [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, 0.001, dist_esq,dist_dir,dist_f, boost);
 
         % atualizando o Mickey
-        mouse.vR=v +omega*mouse.L/2;
-        mouse.vL=v -omega*mouse.L/2;
+        mouse.vR=vR;
+        mouse.vL=vL;
         curCell = returnCell(N,mouse);
         if ~isequal(curCell,mouse.cell), cellPercorridas=cellPercorridas+1;end
         if(cellPercorridas == consecutivos(trecho)), trecho = trecho+1;end

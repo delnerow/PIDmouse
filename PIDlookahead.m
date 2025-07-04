@@ -33,15 +33,14 @@ classdef PIDlookahead
     methods
         function obj = PIDlookahead()
             % Construtor da classe, pode receber lookahead como argumento
-            [num_z den_z]=PI_motor;
             if nargin > 0
                 obj.lookahead = lookahead;
             end
         end
 
-        function [v, omega, obj] = update(obj, mouse, xx, yy, dt, s_left,s_right,s_front, boost)
+        function [vR, vL, obj] = update(obj, mouse, xx, yy, dt, s_left,s_right,s_front, boost)
             % Atualiza as velocidades linear (v) e angular (omega) do robô com base no estado atual
-            % x, y, theta: posição e orientação atuais do mouse 
+            % mouse: da onde tiramos posição e orientação atuais 
             % xx, yy: vetor de pontos do caminho (path) que o robô deve seguir
             % dt: intervalo de tempo desde a última chamada
             % obj: retorna o objeto atualizado (com erros integrados atualizados)
@@ -149,22 +148,8 @@ classdef PIDlookahead
             max_w = pi; % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
 
-            % 7. Controle PID MOTOR REDDO COMETTO
-            w_mouse=((mouse.vR+mouse.vL)/2)/mouse.wheel;
-            wr = mouse.v_base/mouse.wheel; % velocidade linear constante
-            % Reduz velocidade linear em curvas muito fechadas para maior estabilidade
-            if abs(error_ang) > pi/6
-                wr = wr * 0.5;
-            end
-            error_w=wr-w_mouse;
-            obj.integral_motor = obj.integral_motor + error_w * dt;
-            deriv_motor = (error_w - obj.last_error_motor) / dt;
-            obj.last_error_motor = error_w;
-            corr_motor = obj.Kp_motor*error_motor + obj.Ki_motor*obj.integral_motor + obj.Kd_motor*deriv_motor;
-            w=corr_motor;
-            v=w*mouse.wheel;
-
-            % 6. Correção por sensores de parede ===
+           
+            % 7. Correção por sensores de parede ===
             wall_thresh = 0.1; % 5 cm distância mínima aceitável
             repulsion_gain = 1.0;
             
@@ -185,6 +170,8 @@ classdef PIDlookahead
             omega = corr_ang + corr_lat + corr_wall; % soma dos ajustes angular e lateral
             max_w = pi; % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
+            vR=v +omega*mouse.L/2;
+            vL=v -omega*mouse.L/2; 
             
             % Imprime velocidades para depuração
             fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",v,omega);

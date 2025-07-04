@@ -20,6 +20,8 @@ function [start,goal,mouse]= obterDimensoes()
     mouse.v_base=0.5;               % velocidade padrão
     % Variáveis
     mouse.distancia_acumulada = 0;  % um odometro resetado a cada célular
+    mouse.wL =0;
+    mouse.wR=0;
     mouse.vL = 0;                   % velocidade da roda esquerda (m/s)
     mouse.vR = 0;                   % velocidade da roda direita (m/s)
     mouse.theta = -pi/2;           % orientação (rad)
