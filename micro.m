@@ -66,11 +66,7 @@ function micro()
 
     while ~isequal(mouse.cell, goal)
         
-        % Visualize mouse
-        poly_mouse = mousePolyshape(mouse.x_real, mouse.y_real, mouse.theta_real, mouse.side);
-        h_mouse=visualize_mouse(poly_mouse,mouse,h_mouse);
-        % Reta do sensor 
-        visualize_ray(mouse,paredes,h_ray_f,h_ray_d,h_ray_e);
+       
 
        
         % O boost tem seu pico no meio do trecho, acelerando e desacelerando
@@ -79,12 +75,7 @@ function micro()
         end 
         boost = abs((consecutivos(trecho)+anterior)/2-cellPercorridas);
 
-        % Debug
-        fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
-        %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
-        %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
-        fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
-        fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
+        
 
         % Chamando o PID
         dist_esq = sensorLeitura(mouse, paredes, 'esquerda');
@@ -142,8 +133,25 @@ function micro()
         mouse.theta_encoder=mouse.theta_real;
 
         % tempos de frame e da precisão simulação
-        pause(dt);
-        t=t+dt;
+        % pause(dt/1000000);
+        t=t+1;
+        
+        if mod(t, 3) == 0
+             % Visualize mouse
+            poly_mouse = mousePolyshape(mouse.x_real, mouse.y_real, mouse.theta_real, mouse.side);
+            h_mouse=visualize_mouse(poly_mouse,mouse,h_mouse);
+            % Reta do sensor 
+            visualize_ray(mouse,paredes,h_ray_f,h_ray_d,h_ray_e);
+            fprintf("Tempo %.2f \n", t);
+            % Debug
+            fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+            %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
+            %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
+            fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
+            fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
+            fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
+            fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",(vR + vL) / 2,(vR-vL)/(2*mouse.L));
+        end
 
         for i = 1:length(wall_polys)
             if overlaps(poly_mouse, wall_polys(i))

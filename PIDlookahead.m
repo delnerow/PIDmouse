@@ -126,7 +126,6 @@ classdef PIDlookahead
             error_lat = vec_r(1)*tangent(2) - vec_r(2)*tangent(1);
 
             % Debug
-            fprintf("lat : %.3f \n", error_lat);
 
             % 3. Erro angular é o próprio alpha (diferença de orientação)
             error_ang = alpha;
@@ -174,7 +173,7 @@ classdef PIDlookahead
             vL=v/2 -omega*mouse.L/2; 
             
             % Imprime velocidades para depuração
-            fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",v,omega);
+            
         end
     end
 end
