@@ -5,7 +5,7 @@ function micro()
     % Maze in bitfield format (1D, row-major order, uint8).
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
     
-    maze_grid=load_maze_bin("mazes/diag2.maz");
+    maze_grid=load_maze_bin("mazes/song-2.maz");
 
     N=size(maze_grid,1);
     [start,goal,mouse]=obterDimensoes();

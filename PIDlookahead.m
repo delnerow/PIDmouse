@@ -158,7 +158,7 @@ classdef PIDlookahead
             omega = max(min(omega, max_w), -max_w);
 
             % 7. Controle PID MOTOR REDDO COMETTO
-            w_mouse=((mouse.Vr+mouse.vL)/2)/mouse.wheel;
+            w_mouse=((mouse.vR+mouse.vL)/2)/mouse.wheel;
             wr = mouse.v_base/mouse.wheel; % velocidade linear constante
             % Reduz velocidade linear em curvas muito fechadas para maior estabilidade
             if abs(error_ang) > pi/6
