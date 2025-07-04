@@ -66,9 +66,39 @@ function [num_z, den_z] = PI_motor()
     %Aplicando o método de TUSTIN
     Gz = c2d(Gf, 0.001, 'tustin');
     [num_z, den_z] = tfdata(Gz, 'v');
-    % S=stepinfo(Gz, 'RiseTimeLimits', [0 1]);
-    % fprintf("Overshoot: %f\nRiseTime: %f\n", S.Overshoot, S.RiseTime);
-    % figure
-    % step(Gz); grid minor;
+    % % S=stepinfo(Gz, 'RiseTimeLimits', [0 1]);
+    % % fprintf("Overshoot: %f\nRiseTime: %f\n", S.Overshoot, S.RiseTime);
+    % % figure
+%     dt = 0.001;
+%     t = 0:dt:1;   % tempo maior para ver resposta completa
+%     u = ones(size(t));  % entrada degrau
+%     num = num_z;
+%     den = den_z;
+% 
+%     na = length(den);
+%     nb = length(num);
+% 
+%     y = zeros(size(t));
+% 
+%     for n = 1:length(t)
+%         % Soma dos termos de entrada
+%         sum_num = 0;
+%         for k = 1:nb
+%             if (n - k + 1) > 0
+%                 sum_num = sum_num + num(k)*u(n - k + 1);
+%             end
+%         end
+% 
+%         % Soma dos termos de saída
+%         sum_den = 0;
+%         for k = 2:na
+%             if (n - k + 1) > 0
+%                 sum_den = sum_den + den(k)*y(n - k + 1);
+%             end
+%         end
+% 
+%         y(n) = sum_num - sum_den;
+%     end
+% 
 end
 
