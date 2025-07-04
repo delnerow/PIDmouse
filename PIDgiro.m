@@ -27,7 +27,7 @@ classdef PIDgiro
 
         end
 
-        function [wL, wR, obj] = update(obj, mouse, vR, vL)
+        function [wL, wR, obj] = update(obj, mouse, vR, vL, dt)
             % Atualiza as velocidades linear (v) e angular (omega) do robô com base no estado atual
             % mouse: da onde tiramos posição e orientação atuais 
             % xx, yy: vetor de pontos do caminho (path) que o robô deve seguir
@@ -36,7 +36,7 @@ classdef PIDgiro
             % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
          
             % 1. Controle PID MOTOR REDDO COMETTO diretto
-            w_mouse=mouse.wR;
+            w_mouse=mouse.wR_encoder;
             wr = vR/mouse.wheel; % velocidade linear constante
 
             error_w=wr-w_mouse;
@@ -49,7 +49,7 @@ classdef PIDgiro
             wR=corr_motor;
            
             % 2. Controle PID MOTOR REDDO COMETTO esquadro
-            w_mouse=mouse.wL;
+            w_mouse=mouse.wL_encoder;
             wr = vL/mouse.wheel; % velocidade linear constante
 
             error_w=wr-w_mouse;

@@ -8,26 +8,29 @@ function [start,goal,mouse]= obterDimensoes()
     mouse = struct();
     mouse.wheel = 0.1;
     mouse.L = 16/18;                  % distância entre rodas (1:18 cm)
-    mouse.side=0.5;
-    mouse.R = 8/18;                 % Diametro das rodas
-    pulsos_por_volta = 360;
-    circunf = 2*pi*mouse.R;
+    mouse.side=0.5;                % Diametro das rodas
     
-    % Pulsos lidos em cada roda
-    delta_pulsos_R = 10;
-    delta_pulsos_L = 10;
 
     mouse.v_base=0.5;               % velocidade padrão
     % Variáveis
     mouse.distancia_acumulada = 0;  % um odometro resetado a cada célular
-    mouse.wL =0;
-    mouse.wR=0;
-    mouse.vL = 0;                   % velocidade da roda esquerda (m/s)
-    mouse.vR = 0;                   % velocidade da roda direita (m/s)
-    mouse.theta = -pi/2;           % orientação (rad)
+    mouse.wL_real =0;
+    mouse.wR_real=0;
+    mouse.vL_real = 0;                   % velocidade da roda esquerda (m/s)
+    mouse.vR_real = 0;                   % velocidade da roda direita (m/s)
+    mouse.theta_real = -pi/2;           % orientação (rad)
     mouse.dir = 2;                  % 0=up, 1=right, 2=down, 3=left, pra onde ele precisa facear no momento (global)
     mouse.cell=start;               % celula da matriz q ele esta
     mouse.rot = 0;                  % 0=reto, 1=giraDireita, -1; giraEsquerda
-    mouse.x = mouse.cell(2)-0.5;    % posição x
-    mouse.y = 16-mouse.cell(1)+0.5; % posição y
+    mouse.x_real = mouse.cell(2)-0.5;    % posição x
+    mouse.y_real = 16-mouse.cell(1)+0.5; % posição y
+    
+    mouse.pulsos_por_volta = 360;
+    mouse.wL_encoder =0;
+    mouse.wR_encoder=0;
+    mouse.vL_encoder = 0;                   % velocidade da roda esquerda (m/s)
+    mouse.vR_encoder = 0;                   % velocidade da roda direita (m/s)
+    mouse.x_encoder = mouse.cell(2)-0.5;    % posição x
+    mouse.y_encoder = 16-mouse.cell(1)+0.5; % posição y
+    mouse.theta_encoder= -pi/2;
 end

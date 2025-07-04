@@ -4,16 +4,16 @@ function dist = sensorLeitura(robo, paredes, lado)
     alcance = 1.0; % alcance máximo do sensor
 
     if strcmp(lado, 'direita')
-        theta_s  = robo.theta - pi/2;
+        theta_s  = robo.theta_real - pi/2;
     elseif strcmp(lado, 'esquerda')
-        theta_s  = robo.theta + pi/2;
+        theta_s  = robo.theta_real + pi/2;
     else
-        theta_s  = robo.theta;
+        theta_s  = robo.theta_real;
     end
 
     % Ponto inicial do raio
-    x0 = robo.x;
-    y0 = robo.y;
+    x0 = robo.x_real;
+    y0 = robo.y_real;
 
     x1 = x0 + alcance * cos(theta_s);
     y1 = y0 + alcance * sin(theta_s);

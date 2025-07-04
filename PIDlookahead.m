@@ -46,9 +46,9 @@ classdef PIDlookahead
             % obj: retorna o objeto atualizado (com erros integrados atualizados)
             % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
          
-            x=mouse.x;
-            y=mouse.y;
-            theta=mouse.theta;
+            x=mouse.x_encoder;
+            y=mouse.y_encoder;
+            theta=mouse.theta_encoder;
 
             %as vezes ta muito rapido... ir aumentado e mudando os Ganhos
             boost=max(boost,2);
