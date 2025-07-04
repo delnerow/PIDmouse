@@ -1,19 +1,10 @@
 % é uma classe, pois o macaco disse qu sim
 classdef PIDlookahead
     properties
-        %Dados do motor
-        L_motor=0;
-        J_motor=0;
-        R_motor=0;
-        Kt_motor=0;
-        T_amostragem=0;
-        %Ganhos PID motor
-        Kp_motor=0;
-        Ki_motor=0;
-        Kd_motor=0;
-        integral_motor=0;
-        last_error_motor=0;
-        
+        wl=zeros(1,4);
+        rl=zeros(1,4);
+        num_z=zeros(1,4);
+        den_z=zeros(1,4);
         % Ganhos do controlador PID para correção lateral (desvio lateral do robô)
         Kp_lat = 3;  % ganho proporcional lateral
         Ki_lat = 0;  % ganho integral lateral
@@ -42,6 +33,7 @@ classdef PIDlookahead
     methods
         function obj = PIDlookahead()
             % Construtor da classe, pode receber lookahead como argumento
+            [num_z den_z]=PI_motor;
             if nargin > 0
                 obj.lookahead = lookahead;
             end
