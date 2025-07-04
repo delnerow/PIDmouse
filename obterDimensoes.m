@@ -6,6 +6,7 @@ function [start,goal,mouse]= obterDimensoes()
     % Inicialização do robô
     % Constantes
     mouse = struct();
+    mouse.wheel = 0.1;
     mouse.L = 16/18;                  % distância entre rodas (1:18 cm)
     mouse.side=0.5;
     mouse.R = 8/18;                 % Diametro das rodas
