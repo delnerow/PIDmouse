@@ -2,10 +2,10 @@
 classdef PIDgiro
     properties
         %histórico de comandos e referências para o TUSTIN
-        wlR=zeros(1,4);
-        rlR=zeros(1,4);
-        wlL=zeros(1,4);
-        rlL=zeros(1,4);
+        yR=zeros(1,4);
+        uR=zeros(1,4);
+        yL=zeros(1,4);
+        uL=zeros(1,4);
 
         %numerador e denominador no espaço ZETA GUNDAM
         num_z=zeros(1,4);
@@ -30,37 +30,63 @@ classdef PIDgiro
          
             % 1. Controle PID MOTOR REDDO COMETTO diretto
             %max_cmd = 10; % ou algo realista em rad/s
-            w_mouse=mouse.wR_encoder;
+            num=obj.num_z;
+            den=obj.den_z;
+            UR=obj.uR;
+            YR=obj.yR;
+            UL=obj.uL;
+            YL=obj.yL;
+            na = length(den);
+            nb = length(num);
+            sum_num = 0;
+            UR(1)=UR(2);
+            UR(2)=UR(3);
+            UR(3)=UR(4);
             wr = vR/mouse.wheel; % velocidade linear constante
-            obj.wlR=[w_mouse, obj.wlR(1:3)]; %atualizando histórico de ws
-            obj.rlR=[wr, obj.rlR(1:3)]; %atualizando histórico de referências
-            corr_motor=obj.num_z(1)*obj.rlR(1)+obj.num_z(2)*obj.rlR(2)+...
-                       obj.num_z(3)*obj.rlR(3)+obj.num_z(4)*obj.rlR(4)-...
-                       obj.den_z(2)*obj.wlR(2)-obj.den_z(3)*obj.wlR(3)-...
-                       obj.den_z(4)*obj.wlR(4);
-            wR=corr_motor;
-            
-            %if wR>max_cmd, wR=max_cmd;
-            %elseif wR<-max_cmd, wR= -max_cmd; 
-            %end
+            UR(4)=wr;
+            for k = 1:nb
+                if (nb - k + 1) > 0
+                    sum_num=sum_num+num(k)*UR(nb - k + 1);
+                end
+            end
+            sum_den = 0;
+            for k = 2:na
+                if (na - k + 1) > 0
+                    sum_den = sum_den + den(k)*YR(na - k + 1);
+                end
+            end
+            YR(1)=YR(2);
+            YR(2)=YR(3);
+            YR(3)=YR(4);
+            YR(4) = sum_num - sum_den;
+            wR=YR(4);
 
-           
-            % 2. Controle PID MOTOR REDDO COMETTO esquadro
-            w_mouse=mouse.wL_encoder;
+            sum_num = 0;
+            UL(1)=UL(2);
+            UL(2)=UL(3);
+            UL(3)=UL(4);
             wr = vL/mouse.wheel; % velocidade linear constante
-            
-            error_wL=wr-w_mouse;
-
-            obj.rlL=[wr, obj.rlL(1:3)]; %atualizando histórico de referências
-            obj.wlL=[w_mouse, obj.wlL(1:3)]; %atualizando histórico de ws
-            corr_motor=obj.num_z(1)*obj.rlL(1)+obj.num_z(2)*obj.rlL(2)+...
-                       obj.num_z(3)*obj.rlL(3)+obj.num_z(4)*obj.rlL(4)-...
-                       obj.den_z(2)*obj.wlL(2)-obj.den_z(3)*obj.wlL(3)-...
-                       obj.den_z(4)*obj.wlL(4);
-            wL=corr_motor;
-            %if wL>max_cmd, wL=max_cmd;
-            %elseif wL<-max_cmd, wL= -max_cmd; 
-            %end
+            UL(4)=wr;
+            for k = 1:nb
+                if (nb - k + 1) > 0
+                    sum_num=sum_num+num(k)*UL(nb - k + 1);
+                end
+            end
+            sum_den = 0;
+            for k = 2:na
+                if (na - k + 1) > 0
+                    sum_den = sum_den + den(k)*YL(na - k + 1);
+                end
+            end
+            YL(1)=YL(2);
+            YL(2)=YL(3);
+            YL(3)=YL(4);
+            YL(4) = sum_num - sum_den;
+            wL=YL(4);
+            obj.uR=UR;
+            obj.yR=YR;
+            obj.uL=UL;
+            obj.yL=YL;
             
             % Imprime velocidades para depuração
             fprintf("Giros comandados: \n R: %f \n L: %f \n",wR,wL);
