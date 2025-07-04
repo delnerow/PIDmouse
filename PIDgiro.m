@@ -1,14 +1,15 @@
 % é uma classe, pois o macaco disse qu sim
 classdef PIDgiro
     properties
-        wl=zeros(1,4);
-        rl=zeros(1,4);
+        %histórico de comandos e referências para o TUSTIN
+        wlR=zeros(1,4);
+        rlR=zeros(1,4);
+        wlL=zeros(1,4);
+        rlL=zeros(1,4);
+
+        %numerador e denominador no espaço ZETA GUNDAM
         num_z=zeros(1,4);
         den_z=zeros(1,4);
-        % Ganhos do controlador PID
-        Kp_motor = 3;  % ganho proporcional 
-        Ki_motor = 0;  % ganho integral 
-        Kd_motor = 0;  % ganho derivativo 
 
         % Estados para cálculo do termo integral e derivativo do motor direito
         integral_dir = 0;      % soma dos erros angulares para termo integral
@@ -22,7 +23,7 @@ classdef PIDgiro
     methods
         function obj = PIDgiro(PI_motor)
             % Construtor da classe, pode receber lookahead como argumento
-            [num_z, den_z]=PI_motor();
+            [obj.num_z, obj.den_z]=PI_motor();
 
         end
 
@@ -38,14 +39,15 @@ classdef PIDgiro
             w_mouse=mouse.wR;
             wr = vR/mouse.wheel; % velocidade linear constante
 
-            error_w=wr-w_mouse;
-
-            obj.integral_dir = obj.integral_dir + error_w * dt;
-            deriv_motor = (error_w - obj.last_error_dir) / dt;
-            obj.last_error_dir = error_w;
-
-            corr_motor = obj.Kp_motor*error_motor + obj.Ki_motor*obj.integral_dir + obj.Kd_motor*deriv_motor;
+            error_w=wr-w_mouse; 
+            obj.rlR=[error_w, obj.rlR(1:3)]; %atualizando histórico de referências
+            corr_motor=obj.num_z(1)*obj.rlR(1)+obj.num_z(2)*obj.rlR(2)+...
+                       obj.num_z(3)*obj.rlR(3)+obj.num_z(4)*obj.rlR(4)-...
+                       obj.den_z(2)*obj.wlR(2)-obj.den_z(3)*obj.wlR(3)-...
+                       obj.den_z(4)*obj.wlR(4);
             wR=corr_motor;
+            obj.wlR=[corr_motor, obj.wlR(1:3)]; %atualizando histórico de comandos
+
            
             % 2. Controle PID MOTOR REDDO COMETTO esquadro
             w_mouse=mouse.wL;
@@ -53,14 +55,13 @@ classdef PIDgiro
 
             error_w=wr-w_mouse;
 
-            obj.integral_esq = obj.integral_esq + error_w * dt;
-            deriv_motor = (error_w - obj.last_error_esq) / dt;
-            obj.last_error_esq = error_w;
-
-            corr_motor = obj.Kp_motor*error_motor + obj.Ki_motor*obj.integral_esq + obj.Kd_motor*deriv_motor;
+            obj.rlL=[error_w, obj.rlL(1:3)]; %atualizando histórico de referências
+            corr_motor=obj.num_z(1)*obj.rlL(1)+obj.num_z(2)*obj.rlL(2)+...
+                       obj.num_z(3)*obj.rlL(3)+obj.num_z(4)*obj.rlL(4)-...
+                       obj.den_z(2)*obj.wlL(2)-obj.den_z(3)*obj.wlL(3)-...
+                       obj.den_z(4)*obj.wlL(4);
             wL=corr_motor;
-
-
+            obj.wlL=[corr_motor, obj.wlL(1:3)]; %atualizando histórico de comandos
 
             % Imprime velocidades para depuração
             fprintf("Giros comandados: \n R: %f \n L: %f \n",wR,wL);
