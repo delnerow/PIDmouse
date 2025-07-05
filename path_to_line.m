@@ -14,7 +14,7 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
     while i <= length(ordens)-2
         o2 = ordens(i+1);
         o3 = ordens(i+2);
-        if o2~=0 && o3==o2
+        if o2~=0 && o3==o2 
             % Caso do U-turn, duas curvas no mesmo sentido
             p0 = pos(i,:);
             p1 = pos(i+1,:);
@@ -26,7 +26,7 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
         
             i = i + 2;
     
-        elseif  o2~=0
+        elseif  o2~=0 
             % giro  ⇒ diagonal
             p0 = pos(i,:);
             p1 = pos(i+1,:);
@@ -53,6 +53,8 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
     for j = i:N-1
         p0 = pos(j,:);
         p1 = pos(j+1,:);
+        v= p1-p0;
+        p0=p0+v/2;
         xx = [xx linspace(p0(1), p1(1), 10)];
         yy = [yy linspace(p0(2), p1(2), 10)];
     end
@@ -104,17 +106,12 @@ end
 function [xx, yy] = interpolar_diagonal(p0,p1,p2,cellSize)
 
     % ângulos de início/fim com base na direção relativa
-    % Direção vetorial para calcular centro do arco
-    dirvec = [0 1; 1 0; 0 -1; -1 0];
-    d0 = find(all(dirvec==p1-p0,2));
 
-    v = (p2 - p0)/2;
-    if(d0==1) p=[p0(1),p0(2)+cellSize/2];
-    elseif(d0==3) p=[p0(1),p0(2)-cellSize/2];
-    elseif(d0==2) p=[p0(1)+cellSize/2,p0(2)];
-    elseif(d0==4) p=[p0(1)-cellSize/2,p0(2)];
-    end
-    pf=p+v;
-    xx =  linspace(p(1), pf(1), 10);
-    yy = linspace(p(2), pf(2), 10);
+    d = (p2 - p0)/2;
+    v= (p1-p0)/2;
+    p0=p0+v;
+
+    pf=p0+d;
+    xx =  linspace(p0(1), pf(1), 10);
+    yy = linspace(p0(2), pf(2), 10);
 end

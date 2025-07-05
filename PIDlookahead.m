@@ -5,14 +5,14 @@ classdef PIDlookahead
         % Índice do último ponto do caminho que o robô deve perseguir
         idx_last = 1;
         % Distância lookahead para determinar o ponto alvo no caminho
-        lookahead = 0.1; 
+        lookahead = 0.3; % Aumentado para ser mais estável
     end
 
     methods
         function obj = PIDlookahead()
             % Construtor da classe, pode receber lookahead como argumento
             ksi=0.7;
-            tr=0.001;
+            tr=0.1; % Aumentado de 0.001 para 0.1 para ganhos mais suaves
             wn=(pi-acos(ksi))/(tr*sqrt(1-ksi^2));
             obj.Kpsi=2*ksi*wn;
             obj.Ky=wn/(2*ksi);
@@ -80,9 +80,6 @@ classdef PIDlookahead
             % Normaliza o ângulo para ficar entre -pi e pi
             psi = atan2(sin(psi), cos(psi));
 
-            % Debug
-            %fprintf("target, alpha : %.3f , deg: %.1f\n", rad2deg(atan2(y_target- y, x_target- x)), rad2deg(alpha));
-
             % 2. ========== Cálculo do erro lateral ========== 
             % Vetor tangente à curva no ponto alvo é aproximado por diferença entre pontos vizinhos
             if idx_target == 1
@@ -101,33 +98,45 @@ classdef PIDlookahead
                 tangent = tangent / norm_tan;
             end
 
-            % Vetor do robô para o ponto alvo (invertido)
+            % Vetor do robô para o ponto alvo
             vec_r = [xx(idx_target)-x, yy(idx_target)-y];
 
-            % Erro lateral: projeção do vetor do robô sobre a normal à tangente da curva
-            % Usando produto vetorial 2D (scalar)
+            % Vetor normal à tangente
             normal_vec = [-tangent(2), tangent(1)];
 
             % Erro lateral: projeção do vetor até o ponto alvo na direção normal
             error_lat = dot(vec_r, normal_vec);
 
             % 4. ========== Controle P lateral (para alinhar o robô à trajetória) ========== 
+            % Proteção contra divisão por zero
+            if v < 0.01
+                v = 0.01;
+            end
+            
             ky=obj.Ky/v;
             psi_r=ky*error_lat;
-            psi_r=max(min(psi_r,8*pi/18),-8*pi/18);
+            psi_r=max(min(psi_r,pi/4),-pi/4); % Limitar a 45 graus
+            
             corr_ang=obj.Kpsi*(psi_r-psi);
-            fprintf("ERRO LATERAL: %f\nERRO Anguloo: %f",error_lat, psi_r-psi);
+            
+            % Limitar a correção angular para evitar giros loucos
+            max_corr = 2.0; % rad/s
+            corr_ang = max(min(corr_ang, max_corr), -max_corr);
 
             % 8. ========== Combina correções para calcular velocidade angular (omega) ========== 
             omega = corr_ang;
-            %max_w = v*pi;                               % limita velocidade angular máxima (rad/s)
-            %omega = max(min(omega, max_w), -max_w);
+            
+            % Limitar velocidade angular máxima
+            max_w = v*2; % Limite mais conservador
+            omega = max(min(omega, max_w), -max_w);
+            
             vR=v/2 +omega*mouse.L/2;
-            vL=v/2 -omega*mouse.L/2; 
-            fprintf("Ponto alvo: (%.2f, %.2f) | Mouse: (%.2f, %.2f)\n", ...
-            x_target, y_target, mouse.x_real, mouse.y_real);
-            dist = norm([x_target - mouse.x_real, y_target - mouse.y_real]);
-            fprintf("Distância até alvo: %.2f\n", dist);
+            vL=v/2 -omega*mouse.L/2;
+            
+            % Limitar velocidades das rodas
+            max_wheel_speed = 10; % rad/s
+            vR = max(min(vR, max_wheel_speed), -max_wheel_speed);
+            vL = max(min(vL, max_wheel_speed), -max_wheel_speed);
 
         end
     end
