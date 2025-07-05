@@ -34,7 +34,7 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
             [x_arc, y_arc] = interpolar_diagonal(p0, p1, p2, cellSize);
             xx = [xx x_arc];
             yy = [yy y_arc];
-            i = i + 2; % avança 2, pois o arco cobre 3 células
+            i = i + 1; % avança 1
 
         else
             % caso simples: segmento de reta
@@ -42,6 +42,7 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
             p1 = pos(i+1,:);
             v= p1-p0;
             p0=p0+v/2;
+            p1=p1+v/2;
             xx = [xx linspace(p0(1), p1(1), 10)];
             yy = [yy linspace(p0(2), p1(2), 10)];
             i = i + 1;

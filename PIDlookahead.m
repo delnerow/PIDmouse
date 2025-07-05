@@ -22,7 +22,7 @@ classdef PIDlookahead
         % Índice do último ponto do caminho que o robô deve perseguir
         idx_last = 1;
         % Distância lookahead para determinar o ponto alvo no caminho
-        lookahead = 0.5; 
+        lookahead = 0.1; 
     end
 
     methods
@@ -159,8 +159,11 @@ classdef PIDlookahead
             omega = max(min(omega, max_w), -max_w);
             vR=v/2 +omega*mouse.L/2;
             vL=v/2 -omega*mouse.L/2; 
-            
-            
+            fprintf("Ponto alvo: (%.2f, %.2f) | Mouse: (%.2f, %.2f)\n", ...
+            x_target, y_target, mouse.x_real, mouse.y_real);
+            dist = norm([x_target - mouse.x_real, y_target - mouse.y_real]);
+            fprintf("Distância até alvo: %.2f\n", dist);
+
         end
     end
 end

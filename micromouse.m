@@ -118,13 +118,13 @@ function micromouse(maze)
             % Reta do sensor 
             visualize_ray(coord,paredesHV,raios);
             % Debug
-            fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+            %fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
             %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
-            fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
-            fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
-            fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
-            fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
-            fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",(vR + vL) / 2,(vR-vL)/(2*mouse.L));
+            %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
+            %fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
+            %fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
+            %fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
+            %fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",(vR + vL) / 2,(vR-vL)/(2*mouse.L));
         end
         
         if mod(t, 1/dt) == 0
