@@ -1,6 +1,8 @@
 function consecutivos = obterSequenciaOrdens(ordens)
-    % cada indice representa quando para um trecho de consecutivos
-    %ex, (3,4...) signifique que tem do 1 ao 3 em ordens, e do 4 ao 4
+    % Cada indice representa quando para um trecho de consecutivos
+    % Ex, (3,4...) signifique que tem do 1 ao 3 em ordens, e do 4 ao 4
+    % 0 0 0 0 é uma sequencia de consecutivos, gera uma linha reta. 1 -1 1 -1
+    % também, pois é uma diagonal
     i = 1;
     consecutivos = [];
     while i <= length(ordens)

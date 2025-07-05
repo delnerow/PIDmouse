@@ -52,8 +52,8 @@ function [num_z, den_z] = PI_motor()
     %dado o chute inicial, otimizar
     F = @(x) funcaoCusto(planta, requisitos, x);
     x=fminsearch(F, x0);
-    kp=x(1)
-    ki=x(2)
+    kp=x(1);
+    ki=x(2);
     
     % prints de debug
     s=tf('s');

@@ -37,7 +37,7 @@ function micromouse(maze)
     % Plotar raios do sensor
     raios = plotaSensores(ax, mouse.x_real, mouse.y_real);
 
-    % Inicializa controladores
+     % Inicializa controladores
     ctrl = PIDlookahead();
     giro = PIDgiro();
     
@@ -46,13 +46,16 @@ function micromouse(maze)
     trecho=1;           % Em qual trecho de consecutivos esta
     cellPercorridas=0;  % quantas celulas do trecho total (curva) percorreu
 
+
     % colidiu ou não
     % colidiu = false;
-
     % Main Loop
     dt=0.01;
-    t=0; %para ver frames e tempo da simuação
+    t=0; %tempo inicial
     tic; 
+
+   
+    
     while ~isequal(mouse.cell, goal)
         % As coordenadas reais do mouse
         coord.x=mouse.x_real;
@@ -114,7 +117,7 @@ function micromouse(maze)
         if mod(t, 1) == 0
             % Visualize mouse
             poly_mouse = mousePolyshape(coord, mouse.side);
-            draw_mouse=visualize_mouse(ax,poly_mouse,draw_mouse);
+            draw_mouse=visualize_mouse(ax,poly_mouse,mouse,draw_mouse);
             % Reta do sensor 
             visualize_ray(coord,paredesHV,raios);
             % Debug

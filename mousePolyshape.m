@@ -1,4 +1,8 @@
-function p = mousePolyshape(x, y, theta, L)
+function p = mousePolyshape(coord, L)
+    % Polyshape ( para detectar colisão com paredes )
+    x=coord.x;
+    y=coord.y;
+    theta=coord.theta;
     % Centro no (x, y), ângulo theta (rad), dimensões L (largura)
     % Define os 4 vértices no sistema local do mouse (centrado)
     verts = [-L/2, -L/2;

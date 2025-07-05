@@ -1,13 +1,12 @@
-% é uma classe, pois o macaco disse qu sim
 classdef PIDgiro
     properties
-        %histórico de comandos e referências para o TUSTIN
+        % Histórico de comandos e referências para o TUSTIN
         rL=zeros(1,4);
         yL=zeros(1,3);
         rR=zeros(1,4);
         yR=zeros(1,3);
 
-        %numerador e denominador no espaço ZETA GUNDAM
+        % Numerador e denominador no espaço ZETA GUNDAM
         num_z=zeros(1,4);
         den_z=zeros(1,4);
         
@@ -15,7 +14,7 @@ classdef PIDgiro
 
     methods
         function obj = PIDgiro()
-            % Construtor da classe, pode receber lookahead como argumento
+            % Construtor da classe
             [obj.num_z, obj.den_z]=PI_motor();
 
         end
@@ -35,19 +34,24 @@ classdef PIDgiro
             b1 = b_vec(2);
             b2 = b_vec(3);
             b3 = b_vec(4);
+
             a_vec = obj.den_z;
             a1 = a_vec(2);
             a2 = a_vec(3);
             a3 = a_vec(4);
+
             wr=vL/mouse.wheel;
             obj.rL=[wr obj.rL(1:3)];
+
             wL=dot([b0, b1, b2, b3], obj.rL)-dot([a1, a2, a3], obj.yL);
             obj.yL=[wL, obj.yL(1:2)];
 
             wr=vR/mouse.wheel;
             obj.rR=[wr obj.rR(1:3)];
+
             wR=dot([b0, b1, b2, b3], obj.rR)-dot([a1, a2, a3], obj.yR);
             obj.yR=[wR, obj.yR(1:2)];
+            
             %fprintf("\nErro esquerdo: %f\nErro direito: %f\n",wL-vL/mouse.wheel, wR-vR/mouse.wheel);
             % Imprime velocidades para depuração
             % wR = max(min(wR, max_w), -max_w);

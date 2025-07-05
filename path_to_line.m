@@ -57,7 +57,7 @@ function [xx, yy] = path_to_line(path,ordens, cellSize,ax)
     end
 
     % Plot final
-    plot(ax, xx, yy, 'm-', 'LineWidth', 2);
+    plot(ax, xx, yy, 'b-', 'LineWidth', 2);
 end
 
 function pos = cell_to_world(cells, cellSize)

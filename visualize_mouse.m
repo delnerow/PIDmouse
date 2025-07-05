@@ -1,7 +1,7 @@
-% atualiza posição no plot
-function h_mouse=visualize_mouse(poly_mouse,mouse, h_mouse_old)
+function draw_mouse=visualize_mouse(ax,poly_mouse, h_mouse_old)
+    % atualiza posição no plot
     delete(h_mouse_old);
     % Redesenha mouse
-    h_mouse = plot(poly_mouse, 'FaceColor', 'blue', 'FaceAlpha', 0.4);
+    draw_mouse = plot(ax,poly_mouse, 'FaceColor', 'red', 'FaceAlpha', 0.4);
     drawnow;
 end

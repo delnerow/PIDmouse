@@ -1,19 +1,24 @@
-function visualize_ray(mouse,paredes,h_ray_f,h_ray_d,h_ray_e)
-% Sensor frente
-        dist_f = sensorLeitura(mouse, paredes, 'frente');
-        xf = mouse.x_real + dist_f * cos(mouse.theta_real);
-        yf = mouse.y_real + dist_f * sin(mouse.theta_real);
-        set(h_ray_f, 'XData', [mouse.x_real xf], 'YData', [mouse.y_real yf]);
+function visualize_ray(coord,paredes,raios)
+        %Visualizar o alcande dos sensores infravermelhos
+        x=coord.x;
+        y=coord.y;
+        theta=coord.theta;
+        
+        % Sensor frente
+        dist_f = sensorLeitura(coord, paredes, 'frente');
+        xf = x + dist_f * cos(theta);
+        yf = y + dist_f * sin(theta);
+        set(raios.F, 'XData', [x xf], 'YData', [y yf]);
         
         % Sensor direita
-        dist_d = sensorLeitura(mouse, paredes, 'direita');
-        xd = mouse.x_real + dist_d * cos(mouse.theta_real - pi/2);
-        yd = mouse.y_real + dist_d * sin(mouse.theta_real - pi/2);
-        set(h_ray_d, 'XData', [mouse.x_real xd], 'YData', [mouse.y_real yd]);
+        dist_d = sensorLeitura(coord, paredes, 'direita');
+        xd = x + dist_d * cos(theta- pi/2);
+        yd = y + dist_d * sin(theta - pi/2);
+        set(raios.R, 'XData', [x xd], 'YData', [y yd]);
         
         % Sensor esquerda
-        dist_e = sensorLeitura(mouse, paredes, 'esquerda');
-        xe = mouse.x_real + dist_e * cos(mouse.theta_real + pi/2);
-        ye = mouse.y_real + dist_e * sin(mouse.theta_real + pi/2);
-        set(h_ray_e, 'XData', [mouse.x_real xe], 'YData', [mouse.y_real ye]);
+        dist_e = sensorLeitura(coord, paredes, 'esquerda');
+        xe = x + dist_e * cos(theta + pi/2);
+        ye = y + dist_e * sin(theta + pi/2);
+        set(raios.L, 'XData', [x xe], 'YData', [y ye]);
 end
