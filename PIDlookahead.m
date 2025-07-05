@@ -5,7 +5,7 @@ classdef PIDlookahead
         % Índice do último ponto do caminho que o robô deve perseguir
         idx_last = 1;
         % Distância lookahead para determinar o ponto alvo no caminho
-        lookahead = 0.3; % Aumentado para ser mais estável
+        lookahead = 0.5; 
     end
 
     methods
@@ -138,6 +138,13 @@ classdef PIDlookahead
             vR = max(min(vR, max_wheel_speed), -max_wheel_speed);
             vL = max(min(vL, max_wheel_speed), -max_wheel_speed);
 
+            % Plotar vetor tangente
+            quiver(ax, x_target, y_target, tangent(1), tangent(2), 0, 'g');
+
+            % Plotar vetor normal
+            normal_vec = [-tangent(2), tangent(1)];
+            quiver(ax, x_target, y_target, normal_vec(1), normal_vec(2), 0, 'm');
+            
         end
     end
 end
