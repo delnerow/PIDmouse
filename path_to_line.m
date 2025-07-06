@@ -115,3 +115,42 @@ function [xx, yy] = interpolar_diagonal(p0,p1,p2,cellSize)
     xx =  linspace(p0(1), pf(1), 10);
     yy = linspace(p0(2), pf(2), 10);
 end
+
+function [xx, yy] = interpolar_arquinho(p0,p1,p2,cellSize)
+
+     % Interpolação para curvas de 90° (diagonais)
+    raio = cellSize / 2; % Raio correto baseado no tamanho da célula
+    
+    % Centro do arco (intersecção das perpendiculares)
+    centro = p1 + (p2-p1)/2 + (p0-p1)/2;
+    v = (p1-p0)/2;
+
+    % Vetores de entrada e saída
+    v1 = p1 - p0;  % vetor da entrada
+    v2 = p2 - p1;  % vetor da saída
+    z = v1(1)*v2(2) - v1(2)*v2(1);  % produto vetorial 2D (z-component)
+
+    % Ângulos de início e fim
+    theta1 = atan2(p0(2)+v(2)-centro(2), p0(1)+v(1)-centro(1));
+    theta2 = atan2(p2(2)-v2(2)/2-centro(2), p2(1)-v2(1)/2-centro(1));
+    
+    % Gerar arco suave de 90°
+    % Decidir sentido (horário ou anti-horário)
+    if z > 0
+        % anti-horário
+        if theta2 < theta1
+            theta2 = theta2 + 2*pi;
+        end
+        theta = linspace(theta1, theta2, 15); % Menos pontos para curva mais suave
+    else
+        % horário
+        if theta2 > theta1
+            theta2 = theta2 - 2*pi;
+        end
+        theta = linspace(theta1, theta2, 15);
+    end
+    
+    % Gerar pontos do arco
+    xx = centro(1) + raio * cos(theta);
+    yy = centro(2) + raio * sin(theta);
+end

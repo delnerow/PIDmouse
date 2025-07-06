@@ -88,7 +88,7 @@ function micromouse(maze)
         mouse.y_real = mouse.y_real + v_media * sin(mouse.theta_real) * dt;
         mouse.theta_real = mouse.theta_real + w_mouse * dt;
         mouse.theta_real = atan2(sin(mouse.theta_real), cos(mouse.theta_real));
-        
+
         % --- CINEMÁTICA DIFERENCIAL ENCODER (ODOMETRIA) ---
         v_media_encoder = (mouse.vR_encoder + mouse.vL_encoder) / 2;
         w_mouse_encoder = (mouse.vR_encoder - mouse.vL_encoder) / mouse.L;
@@ -136,9 +136,10 @@ function micromouse(maze)
             %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
             %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
             %fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
-            fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
-            fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
-            fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",(vR + vL) / 2,(vR-vL)/(2*mouse.L));
+            %fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
+            %fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
+            %fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",(vR + vL) / 2,(vR-vL)/(2*mouse.L));
+            fprintf("Leitura paredes: f %.3f, d %.3f e %.3f\n", dist_f,dist_dir,dist_esq);
         end
         
         if mod(t, 1/dt) == 0

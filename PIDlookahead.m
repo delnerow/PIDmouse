@@ -2,14 +2,14 @@ classdef PIDlookahead
     properties
 
         % Ganhos do controlador PID para correção lateral (desvio lateral do robô)
-        Kp_lat = 15;  % ganho proporcional lateral
+        Kp_lat = 0;  % ganho proporcional lateral
         Ki_lat = 0;  % ganho integral lateral
         Kd_lat = 0;  % ganho derivativo lateral
 
         % Ganhos do controlador PID para correção angular (erro de orientação do robô)
-        Kp_ang = 50;  % ganho proporcional angular
+        Kp_ang = 80;  % ganho proporcional angular
         Ki_ang = 524;  % ganho integral angular
-        Kd_ang = 5.87;  % ganho derivativo angular
+        Kd_ang = 7.87;  % ganho derivativo angular
 
         % Estados para cálculo do termo integral e derivativo lateral
         integral_lat = 0;      % soma dos erros laterais para termo integral
@@ -138,17 +138,34 @@ classdef PIDlookahead
 
            
             % 7. ========== Correção por sensores de parede ========== 
-            wall_thresh = 0.05; % 0.9 cm distância mínima aceitável
+            wall_thresh = 0.05; % x18 distância mínima aceitável
             repulsion_gain = 1.0;
+            centering_gain = 20.0; % Ganho para centralização entre paredes
             
             corr_wall = 0;
             
-            if s_left < wall_thresh
-                corr_wall = corr_wall + repulsion_gain * (wall_thresh - s_left);
+            % Verificar se há paredes laterais para centralização
+            left_wall_detected = s_left < 0.8; % Parede esquerda detectada 
+            right_wall_detected = s_right < 0.8; % Parede direita detectada
+            
+            if left_wall_detected && right_wall_detected
+                % Duas paredes laterais detectadas - centralizar entre elas
+                wall_diff = s_right - s_left; % Diferença entre distâncias
+                corr_wall = centering_gain * wall_diff; % Centralizar baseado na diferença
+                fprintf("Centralizando entre paredes - Diferença: %.3f\n", wall_diff);
+            else
+                % Apenas uma parede ou nenhuma - usar repulsão simples
+                if s_left < wall_thresh
+                    fprintf("Muito perto!");
+                    corr_wall = corr_wall + repulsion_gain * (wall_thresh - s_left);
+                end
+                if s_right < wall_thresh
+                    fprintf("Muito perto!");
+                    corr_wall = corr_wall - repulsion_gain * (wall_thresh - s_right);
+                end
             end
-            if s_right < wall_thresh
-                corr_wall = corr_wall - repulsion_gain * (wall_thresh - s_right);
-            end
+            
+            % Reduzir velocidade se há parede à frente
             if s_front < wall_thresh
                 v = v * 0.5; % Reduz velocidade se tem parede à frente
             end
