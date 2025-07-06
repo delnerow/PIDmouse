@@ -1,0 +1,18 @@
+function plotRastro(ax, posicoes)
+    % Plota o rastro do mouse pelo labirinto (apenas o centro)
+    % ax: eixo onde plotar
+    % posicoes: matriz [Nx2] com posições (x,y) do mouse
+    % orientacoes: vetor [Nx1] com orientações (theta) do mouse
+    % lado_mouse: tamanho do lado do mouse (não usado, mas mantido para compatibilidade)
+    
+    % Plotar linha do centro do rastro (caminho percorrido)
+    plot(ax, posicoes(:, 1), posicoes(:, 2), 'b-', 'LineWidth', 2, 'Color', [0.2, 0.6, 1]);
+    
+    % Opcional: marcar pontos específicos (início, fim, etc.)
+    if length(posicoes) > 0
+        % Marcar posição inicial
+        plot(ax, posicoes(1, 1), posicoes(1, 2), 'go', 'MarkerSize', 8, 'MarkerFaceColor', 'g');
+        % Marcar posição final
+        plot(ax, posicoes(end, 1), posicoes(end, 2), 'ro', 'MarkerSize', 8, 'MarkerFaceColor', 'r');
+    end
+end 

@@ -1,7 +1,10 @@
 function micromouse(maze)
     % Maze no formato bitfield.
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
-    
+
+    % Configurações da simuação, parâmetros e plots
+    config=obterConfig();
+
     maze_grid=load_maze_bin("mazes/"+maze+".maz");
 
     % NxN, dimensão do labirinto
@@ -21,13 +24,16 @@ function micromouse(maze)
     floodval = flood_fill_micromouse(maze_grid, goal, 0, start);
     
     % Plotando o mapa
-    ax = gca;
-    visualize_maze_bitfield(wall_polys,N ,goal, floodval,ax);
+    ax = gca; visualize_maze_bitfield(wall_polys,N ,goal, floodval,ax);
 
     % Melhor caminho até o goal, com celulas e comandos/direcoes delas
     [path,ordens] = stack_caminho(floodval,maze_grid,start);
-    % Stack de celulas vira curva
-    [xx, yy] = path_to_line(path,ordens, 1,ax);
+    linha = path_to_line(path,ordens, 1,config.path, ax, config.quinas); % Stack de celulas vira curva
+    
+    % Criar texto para o cronômetro
+    timer_text = text(ax, 1, 0.98, 'Tempo: 0.00s', 'Units', 'normalized', ...
+        'FontSize', 12, 'FontWeight', 'bold', 'Color', 'red', ...
+        'BackgroundColor', 'white', 'EdgeColor', 'black');
 
     % Plotando mouse pela primeira vez
     % Polyshape do mouse, para  detectar colisão com parede
@@ -41,32 +47,48 @@ function micromouse(maze)
     ctrl = PIDlookahead();
     giro = PIDgiro();
     
-    % Vetor que da boost ao robo quando ve varios comando de linha reta
+    % Vetor que da boost ao robo quando identifica linha reta longa
     consecutivos = obterSequenciaOrdens(ordens); 
     trecho=1;           % Em qual trecho de consecutivos esta
-    cellPercorridas=0;  % quantas celulas do trecho total (curva) percorreu
-
+    cellPercorridas=0;  % quantas celulas do trecho total (linha) percorreu
+    
+    
     % colidiu ou não
     % colidiu = false;
 
     % Main Loop
     dt=0.01;
-    t=0; %para ver frames e tempo da simuação
+    passo=0; %para ver frames e tempo da simuação
     tic; 
-    while ~isequal(mouse.cell, goal)
-        % As coordenadas reais do mouse
-        coord.x=mouse.x_real;
-        coord.y=mouse.y_real;
-        coord.theta=mouse.theta_real;
+    vel_ref = [];
+    vel_real = [];
+    time_vec = [];
+    lookds=[];
+    
+    % Para armazenar o rastro do mouse
+    rastro_posicoes = [];
 
-        % Boost de velocidade atual
-        boost = max(consecutivos(trecho)-cellPercorridas,1);
+    while ~isequal(mouse.cell, goal)
+        % As coordenadas do mouse, usando odometria ou posição real
+        if strcmp(config.encoder,'true')
+            coord.x=mouse.x_encoder;
+            coord.y=mouse.y_encoder;
+            coord.theta=mouse.theta_real;
+        else
+            coord.x=mouse.x_real;
+            coord.y=mouse.y_real;
+            coord.theta=mouse.theta_real;
+        end
+        
+        % Boost de velocidade atual há 3 tipos diferentes: gauss, rampa e nulo (boost=1)
+
+        boost = obterBoost(consecutivos(trecho),cellPercorridas,config.boost_tipo);
 
         % Obtendo leitura dos sensores
-        [dist_esq,dist_dir,dist_f]= obterInfravermelho(coord, paredesHV);
+        sensores= obterInfravermelho(coord, paredesHV);
 
         % Chamando o PID
-        [vR,vL, ctrl] = ctrl.update(mouse, xx, yy, dt, dist_esq,dist_dir,dist_f, boost,ax);
+        [vR,vL, ctrl] = ctrl.update(coord,mouse, linha, dt, sensores, boost, config.lookahead);
         
         % Encoder
         [mouse.encoder_L,mouse.encoder_R,mouse.encoder_L_prev,mouse.encoder_R_prev, mouse.wL_encoder,mouse.wR_encoder] = encoder_simulado(mouse,dt);
@@ -81,72 +103,82 @@ function micromouse(maze)
         mouse.vR_encoder=mouse.wR_encoder*mouse.wheel;
         mouse.vL_encoder=mouse.wL_encoder*mouse.wheel;
         % Mexendo o mouse
-        % --- CINEMÁTICA DIFERENCIAL REAL ---
-        v_media = (mouse.vR_real + mouse.vL_real) / 2;
-        w_mouse = (mouse.vR_real - mouse.vL_real) / mouse.L;
-        mouse.x_real = mouse.x_real + v_media * cos(mouse.theta_real) * dt;
-        mouse.y_real = mouse.y_real + v_media * sin(mouse.theta_real) * dt;
-        mouse.theta_real = mouse.theta_real + w_mouse * dt;
-        mouse.theta_real = atan2(sin(mouse.theta_real), cos(mouse.theta_real));
+        
 
-        % --- CINEMÁTICA DIFERENCIAL ENCODER (ODOMETRIA) ---
-        v_media_encoder = (mouse.vR_encoder + mouse.vL_encoder) / 2;
-        w_mouse_encoder = (mouse.vR_encoder - mouse.vL_encoder) / mouse.L;
         
-        % Usar Runge-Kutta de 4ª ordem para integração mais precisa
-        k1_x = v_media_encoder * cos(mouse.theta_encoder);
-        k1_y = v_media_encoder * sin(mouse.theta_encoder);
-        k1_theta = w_mouse_encoder;
-        
-        k2_x = v_media_encoder * cos(mouse.theta_encoder + k1_theta * dt/2);
-        k2_y = v_media_encoder * sin(mouse.theta_encoder + k1_theta * dt/2);
-        k2_theta = w_mouse_encoder;
-        
-        k3_x = v_media_encoder * cos(mouse.theta_encoder + k2_theta * dt/2);
-        k3_y = v_media_encoder * sin(mouse.theta_encoder + k2_theta * dt/2);
-        k3_theta = w_mouse_encoder;
-        
-        k4_x = v_media_encoder * cos(mouse.theta_encoder + k3_theta * dt);
-        k4_y = v_media_encoder * sin(mouse.theta_encoder + k3_theta * dt);
-        k4_theta = w_mouse_encoder;
-        
-        % Atualizar posição e orientação usando apenas odometria
-        mouse.x_encoder = mouse.x_encoder + (k1_x + 2*k2_x + 2*k3_x + k4_x) * dt / 6;
-        mouse.y_encoder = mouse.y_encoder + (k1_y + 2*k2_y + 2*k3_y + k4_y) * dt / 6;
-        mouse.theta_encoder = mouse.theta_encoder + (k1_theta + 2*k2_theta + 2*k3_theta + k4_theta) * dt / 6;
-        mouse.theta_encoder = atan2(sin(mouse.theta_encoder), cos(mouse.theta_encoder));
-        mouse.x_encoder=mouse.x_real;
-        mouse.y_encoder=mouse.y_real;
-        mouse.theta_encoder=mouse.theta_real;
+        if strcmp(config.encoder,'true')
+            % --- CINEMÁTICA DIFERENCIAL ENCODER (ODOMETRIA) ---
+            v_media_encoder = (mouse.vR_encoder + mouse.vL_encoder) / 2;
+            mouse.v_media=v_media_encoder;
+            w_mouse_encoder = (mouse.vR_encoder - mouse.vL_encoder) / mouse.L;
+            
+            % Usar Runge-Kutta de 4ª ordem para integração mais precisa
+            k1_x = v_media_encoder * cos(mouse.theta_encoder);
+            k1_y = v_media_encoder * sin(mouse.theta_encoder);
+            k1_theta = w_mouse_encoder;
+            
+            k2_x = v_media_encoder * cos(mouse.theta_encoder + k1_theta * dt/2);
+            k2_y = v_media_encoder * sin(mouse.theta_encoder + k1_theta * dt/2);
+            k2_theta = w_mouse_encoder;
+            
+            k3_x = v_media_encoder * cos(mouse.theta_encoder + k2_theta * dt/2);
+            k3_y = v_media_encoder * sin(mouse.theta_encoder + k2_theta * dt/2);
+            k3_theta = w_mouse_encoder;
+            
+            k4_x = v_media_encoder * cos(mouse.theta_encoder + k3_theta * dt);
+            k4_y = v_media_encoder * sin(mouse.theta_encoder + k3_theta * dt);
+            k4_theta = w_mouse_encoder;
+            
+            % Atualizar posição e orientação usando apenas odometria
+            mouse.x_encoder = mouse.x_encoder + (k1_x + 2*k2_x + 2*k3_x + k4_x) * dt / 6;
+            mouse.y_encoder = mouse.y_encoder + (k1_y + 2*k2_y + 2*k3_y + k4_y) * dt / 6;
+            mouse.theta_encoder = mouse.theta_encoder + (k1_theta + 2*k2_theta + 2*k3_theta + k4_theta) * dt / 6;
+            mouse.theta_encoder = atan2(sin(mouse.theta_encoder), cos(mouse.theta_encoder));
+        else
+            % --- CINEMÁTICA DIFERENCIAL REAL ---
+            v_media = (mouse.vR_real + mouse.vL_real) / 2;
+            mouse.v_media=v_media;
+            w_mouse = (mouse.vR_real - mouse.vL_real) / mouse.L;
+            mouse.x_real = mouse.x_real + v_media * cos(mouse.theta_real) * dt;
+            mouse.y_real = mouse.y_real + v_media * sin(mouse.theta_real) * dt;
+            mouse.theta_real = mouse.theta_real + w_mouse * dt;
+            mouse.theta_real = atan2(sin(mouse.theta_real), cos(mouse.theta_real));
+        end
         curCell = returnCell(N,mouse);
         if ~isequal(curCell,mouse.cell), cellPercorridas=cellPercorridas+1;end
         if(cellPercorridas == consecutivos(trecho)), trecho = trecho+1;end
         mouse.cell=curCell;
-
+        
         % tempos de frame
-        t=t+1;
-        if mod(t, 1) == 0
+        passo=passo+1;
+        if mod(passo, 1) == 0
             % Visualize mouse
-            poly_mouse = mousePolyshape(coord, mouse.side);
-            draw_mouse=visualize_mouse(ax,poly_mouse,draw_mouse);
-            % Reta do sensor 
-            visualize_ray(coord,paredesHV,raios);
+            if strcmp(config.animar,'true')
+                poly_mouse = mousePolyshape(coord, mouse.side);
+                draw_mouse=visualize_mouse(ax,poly_mouse,draw_mouse);
+                % Reta do sensor 
+                visualize_ray(coord,paredesHV,raios);
+                % Atualizar cronômetro
+                set(timer_text, 'String', sprintf('Tempo: %.2fs', passo*dt));
+            end
             % Debug
-            fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
+            %fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
             %fprintf("ENCODER: (x) e (y) e(theta) :%f,%f  %f \n",mouse.x_encoder,mouse.y_encoder,mouse.theta_encoder/pi*180);
             %fprintf("Trecho, percorridas, boost : %.3f , %.1f, %f\n", trecho,cellPercorridas, boost);
             %fprintf("ENCODER: (v) e (omega) :%f,%f  \n",(mouse.vR_encoder  + mouse.vL_encoder ) / 2, (mouse.vR_encoder  - mouse.vL_encoder ) / mouse.L);
             %fprintf("Real: (v) e (omega) :%f,%f  \n",(mouse.vR_real  + mouse.vL_real ) / 2, (mouse.vR_real  - mouse.vL_real ) / mouse.L);
             %fprintf("Giros comandados: \n R: %f \n L: %f \n",mouse.wR_real,mouse.wL_real);
             %fprintf("Velocidades comandadas: \n v: %f \n w: %f \n",(vR + vL) / 2,(vR-vL)/(2*mouse.L));
-            fprintf("Leitura paredes: f %.3f, d %.3f e %.3f\n", dist_f,dist_dir,dist_esq);
+            %fprintf("Leitura paredes: f %.3f, d %.3f e %.3f\n", dist_f,dist_dir,dist_esq);
         end
+
+        vel_ref(end+1) = (vR + vL) / 2; % Reference velocity (commanded)
+        vel_real(end+1) = (mouse.vR_real + mouse.vL_real) / 2; % Real velocity
+        time_vec(end+1) = passo * dt;
+        lookds(end+1)=ctrl.lookahead;
         
-        if mod(t, 1/dt) == 0
-            %clc;
-            fprintf("Tempo %.2f \n", t);
-           
-        end
+        % Armazenar posição e orientação para o rastro
+        rastro_posicoes(end+1, :) = [coord.x, coord.y];
 
         %for i = 1:length(wall_polys)
         %    if overlaps(poly_mouse, wall_polys(i))
@@ -162,7 +194,36 @@ function micromouse(maze)
     end
 
     % Final
-    title(sprintf('Terminou em %f segundos!',toc));
+    title(sprintf('Tempo para simulação: %f segundos!',toc));
+    set(timer_text, 'String', sprintf('Tempo: %.2fs', passo*dt));
+    poly_mouse = mousePolyshape(coord, mouse.side);
+    visualize_mouse(ax,poly_mouse,draw_mouse);
+    
+    % Plotar o rastro do mouse
+    if strcmp(config.rastro,'true')
+        plotRastro(ax, rastro_posicoes);
+    end
+    if strcmp(config.graficos,'true')
+        figure;
+        plot(time_vec, vel_ref, 'b-', 'DisplayName', 'Reference Velocity');
+        hold on;
+        plot(time_vec, vel_real, 'r-', 'DisplayName', 'Real Velocity');
+        xlabel('Time (s)');
+        ylabel('Velocity (units/s)');
+        legend;
+        title('Reference vs Real Velocity Over Time');
+        hold off;
+        figure;
+        plot(time_vec, lookds, 'b-', 'DisplayName', 'Lookahead');
+        hold on;
+        %plot(time_vec, vel_real, 'r-', 'DisplayName', 'Real Velocity');
+        xlabel('Time (s)');
+        ylabel('Velocity (units/s)');
+        legend;
+        title('Lookahead vs Real Velocity Over Time');
+        hold off;
+    end
+
 end
 
 

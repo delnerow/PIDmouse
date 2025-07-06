@@ -2,14 +2,13 @@ classdef PIDlookahead
     properties
 
         % Ganhos do controlador PID para correção angular (erro de orientação do robô)
-        Kp_ang = 70;  % ganho proporcional angular
-        Ki_ang = 1224;  % ganho integral angular
+        Kp_ang = 40;  % ganho proporcional angular
+        Ki_ang = 1424;  % ganho integral angular
         Kd_ang = 5.87;  % ganho derivativo angular
 
         % Estados para cálculo do termo integral e derivativo angular
         integral_ang = 0;      % soma dos erros angulares para termo integral
         last_error_ang = 0;    % último erro angular para derivada
-        last_error_angle = 0;
 
         % Índice do último ponto do caminho que o robô deve perseguir
         idx_last = 1;
@@ -18,8 +17,6 @@ classdef PIDlookahead
         max_ld = 1;
         min_ld = 0.4;
         Kdd=0.02;
-
-        last_curvature=0;
     end
 
     methods
@@ -30,59 +27,53 @@ classdef PIDlookahead
             end
         end
 
-        function [vR, vL, obj] = update(obj, coord, mouse, linha, dt, sensores, boost, tipo_ld)
+        function [vR, vL, obj] = update(obj, mouse, xx, yy, dt, s_left,s_right,s_front, boost,ax)
             % Atualiza as velocidades linear (v) e angular (omega) do robô com base no estado atual
             % mouse: da onde tiramos posição e orientação atuais 
             % xx, yy: vetor de pontos do caminho (path) que o robô deve seguir
             % dt: intervalo de tempo desde a última chamada
             % obj: retorna o objeto atualizado (com erros integrados atualizados)
             % boost: aumenta velocida quando percebe bastante linha reta pra percorrer
+         
+            % Usando coordenadas estimadas pelo mouse (wip)
+            x=mouse.x_encoder;
+            y=mouse.y_encoder;
+            theta=mouse.theta_real;
 
-            xx=linha.xx;
-            yy=linha.yy;
+            v = mouse.v_base * boost ; % velocidade linear dependente do boost
+            v=min(v,mouse.v_max);
+            obj.lookahead=v*obj.Kdd;
 
-            dist_esq = sensores.dist_esq;
-            dist_dir = sensores.dist_dir;
-            dist_f = sensores.dist_f;
-
-            x=coord.x;
-            y=coord.y;
-            theta=coord.theta;
             % 7. ========== Correção por sensores de parede ========== 
             wall_thresh = 0.05; % x18 distância mínima aceitável
             repulsion_gain = 1.0;
-            centering_gain = 5.0; % Ganho para centralização entre paredes
+            centering_gain = 10.0; % Ganho para centralização entre paredes
             
             corr_wall = 0;
             
             % Verificar se há paredes laterais para centralização
-            left_wall_detected = dist_esq < 0.8; % Parede esquerda detectada 
-            right_wall_detected = dist_dir < 0.8; % Parede direita detectada
+            left_wall_detected = s_left < 0.8; % Parede esquerda detectada 
+            right_wall_detected = s_right < 0.8; % Parede direita detectada
+            
             if left_wall_detected && right_wall_detected
                 % Duas paredes laterais detectadas - centralizar entre elas
-                wall_diff = dist_esq - dist_dir; % Diferença entre distâncias
-                corr_wall = wall_diff / centering_gain; % Centralizar baseado na diferença
-                %fprintf("Centralizando entre paredes - Diferença: %.3f\n", wall_diff);
+                wall_diff = s_right - s_left; % Diferença entre distâncias
+                corr_wall = centering_gain * wall_diff; % Centralizar baseado na diferença
+                fprintf("Centralizando entre paredes - Diferença: %.3f\n", wall_diff);
             else
                 % Apenas uma parede ou nenhuma - usar repulsão simples
-                if dist_esq < wall_thresh
-                    %fprintf("Muito perto!");
-                    corr_wall = corr_wall + repulsion_gain * (wall_thresh - dist_esq);
+                if s_left < wall_thresh
+                    fprintf("Muito perto!");
+                    corr_wall = corr_wall + repulsion_gain * (wall_thresh - s_left);
                 end
-                if dist_dir < wall_thresh
-                    %fprintf("Muito perto!");
-                    corr_wall = corr_wall - repulsion_gain * (wall_thresh - dist_dir);
+                if s_right < wall_thresh
+                    fprintf("Muito perto!");
+                    corr_wall = corr_wall - repulsion_gain * (wall_thresh - s_right);
                 end
             end
-
-     
-            v = mouse.v_base * boost;
-            obj.lookahead=obterLookahead(mouse.v_base,v,obj.last_curvature, tipo_ld);
-
-            
             
             % Reduzir velocidade se há parede à frente
-            if dist_f < wall_thresh
+            if s_front < wall_thresh
                 v = v * 0.5; % Reduz velocidade se tem parede à frente
             end
 
@@ -119,29 +110,7 @@ classdef PIDlookahead
 
             % Atualiza o índice do último ponto perseguido para o próximo ciclo
             obj.idx_last = idx_target;
-            % Calcular curvatura no ponto alvo
-            if idx_target > 1 && idx_target < N
-                % Pontos antes, alvo e depois
-                x1 = xx(idx_target-1); y1 = yy(idx_target-1);
-                x2 = xx(idx_target);   y2 = yy(idx_target);
-                x3 = xx(idx_target+1); y3 = yy(idx_target+1);
-            
-                % Derivadas aproximadas
-                dx1 = x2 - x1; dy1 = y2 - y1;
-                dx2 = x3 - x2; dy2 = y3 - y2;
-            
-                % Primeira e segunda derivada
-                dx = (dx1 + dx2) / 2;
-                dy = (dy1 + dy2) / 2;
-                ddx = dx2 - dx1;
-                ddy = dy2 - dy1;
-            
-                % Curvatura
-                curvature = abs(dx * ddy - dy * ddx) / (dx^2 + dy^2)^(3/2);
-            else
-                curvature = 0; % Nas extremidades, defina como zero ou NaN
-            end
-            obj.last_curvature=curvature;
+
             % Extrai as coordenadas do ponto alvo
             x_target = xx(idx_target);
             y_target = yy(idx_target);
@@ -156,6 +125,10 @@ classdef PIDlookahead
             % Debug
             %fprintf("target, alpha : %.3f , deg: %.1f\n", rad2deg(atan2(y_target- y, x_target- x)), rad2deg(alpha));
 
+ 
+
+            % Vetor do robô para o ponto alvo (invertido)
+            vec_r = [x - xx(idx_target), y - yy(idx_target)];
 
             % Erro lateral: projeção do vetor do robô sobre a normal à tangente da curva
             % Usando produto vetorial 2D (scalar)
@@ -163,20 +136,20 @@ classdef PIDlookahead
 
             % 3. ========== Erro angular é o próprio alpha (diferença de orientação) ========== 
             error_ang = alpha;
-            error_ang_parede=error_ang+corr_wall;
+
 
             % 5. ========== Controle PID angular (para ajustar a orientação do robô) ========== 
-            obj.integral_ang = obj.integral_ang + error_ang_parede * dt;
-            deriv_ang = (error_ang_parede - obj.last_error_ang) / dt;
-            obj.last_error_ang = error_ang_parede;
-            corr_ang = obj.Kp_ang*error_ang_parede + obj.Ki_ang*obj.integral_ang + obj.Kd_ang*deriv_ang;
+            obj.integral_ang = obj.integral_ang + error_ang * dt;
+            deriv_ang = (error_ang - obj.last_error_ang) / dt;
+            obj.last_error_ang = error_ang;
+            corr_ang = obj.Kp_ang*error_ang + obj.Ki_ang*obj.integral_ang + obj.Kd_ang*deriv_ang;
 
            
             
 
             % 8. ========== Combina correções para calcular velocidade angular (omega) ========== 
             
-            omega = corr_ang   ;    % soma dos ajustes angular e lateral
+            omega = corr_ang  ;    % soma dos ajustes angular e lateral
             max_w = v*pi;                               % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
             vR=v/2 +omega*mouse.L/2;

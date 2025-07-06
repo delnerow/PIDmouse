@@ -6,12 +6,14 @@ function [start,goal,mouse]= obterDimensoes()
     % Inicialização do robô
     % Constantes
     mouse = struct();
-    mouse.wheel = 0.1;                      % Raio das rodas
-    mouse.L = 16/18;                        % distância entre rodas (1:18 cm)
-    mouse.side=0.5;                         % Diametro das rodas
-    mouse.v_base=10;                         % velocidade padrão
-    mouse.pulsos_por_volta = 1440;          % Encoder de alta resolução (4x mais preciso)
-    mouse.v_max = 30;
+    mouse.wheel = 0.1;                          % Raio das rodas
+    mouse.L = 16/18;                            % distância entre rodas (1:18 cm)
+    mouse.side = 0.5;                           % Diametro das rodas
+    mouse.v_base = 10;                          % Velocidade padrão do robô
+    mouse.w_max = 400;                          % Giro máximo de uma roda
+    mouse.v_max = 2* mouse.w_max*mouse.wheel;   % Velocidade máxima do robô
+    mouse.pulsos_por_volta = 1440;              % Encoder de alta resolução (4x mais preciso)
+    
 
     % Variáveis
     mouse.wL_real = 0;
@@ -35,4 +37,7 @@ function [start,goal,mouse]= obterDimensoes()
     mouse.x_encoder = mouse.cell(2)-0.5;    % posição x pelo encoder
     mouse.y_encoder = 16-mouse.cell(1)+0.5; % posição y pelo encoder
     mouse.theta_encoder= -pi/2;             % orientação (rad) do encoder
+
+    mouse.v_media=0;
+
 end
