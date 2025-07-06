@@ -34,6 +34,11 @@ function micromouse(maze)
     timer_text = text(ax, 1, 0.98, 'Tempo: 0.00s', 'Units', 'normalized', ...
         'FontSize', 12, 'FontWeight', 'bold', 'Color', 'red', ...
         'BackgroundColor', 'white', 'EdgeColor', 'black');
+    
+    % Criar texto para a velocidade
+    vel_text = text(ax, 1, 0.8, 'Velocidade: 0.00 m/s', 'Units', 'normalized', ...
+        'FontSize', 12, 'FontWeight', 'bold', 'Color', 'blue', ...
+        'BackgroundColor', 'white', 'EdgeColor', 'black');
 
     % Plotando mouse pela primeira vez
     % Polyshape do mouse, para  detectar colisão com parede
@@ -57,13 +62,14 @@ function micromouse(maze)
     % colidiu = false;
 
     % Main Loop
-    dt=0.01;
+    dt=config.passo;
     passo=0; %para ver frames e tempo da simuação
     tic; 
     vel_ref = [];
     vel_real = [];
     time_vec = [];
     lookds=[];
+    boosts=[];
     
     % Para armazenar o rastro do mouse
     rastro_posicoes = [];
@@ -81,7 +87,7 @@ function micromouse(maze)
         end
         
         % Boost de velocidade atual há 3 tipos diferentes: gauss, rampa e nulo (boost=1)
-
+        if trecho> length(consecutivos), trecho = trecho-1; end
         boost = obterBoost(consecutivos(trecho),cellPercorridas,config.boost_tipo);
 
         % Obtendo leitura dos sensores
@@ -160,6 +166,9 @@ function micromouse(maze)
                 visualize_ray(coord,paredesHV,raios);
                 % Atualizar cronômetro
                 set(timer_text, 'String', sprintf('Tempo: %.2fs', passo*dt));
+                
+                % Atualizar velocidade média
+                set(vel_text, 'String', sprintf('Velocidade: %.2f m/s', mouse.v_media));
             end
             % Debug
             %fprintf("(x) e (y) e(theta) :%f,%f  %f \n",mouse.x_real,mouse.y_real,mouse.theta_real/pi*180);
@@ -176,6 +185,7 @@ function micromouse(maze)
         vel_real(end+1) = (mouse.vR_real + mouse.vL_real) / 2; % Real velocity
         time_vec(end+1) = passo * dt;
         lookds(end+1)=ctrl.lookahead;
+        boosts(end+1)=boost;
         
         % Armazenar posição e orientação para o rastro
         rastro_posicoes(end+1, :) = [coord.x, coord.y];
@@ -196,6 +206,9 @@ function micromouse(maze)
     % Final
     title(sprintf('Tempo para simulação: %f segundos!',toc));
     set(timer_text, 'String', sprintf('Tempo: %.2fs', passo*dt));
+    
+    % Atualizar velocidade final
+    set(vel_text, 'String', sprintf('Velocidade: %.2f m/s', mouse.v_media));
     poly_mouse = mousePolyshape(coord, mouse.side);
     visualize_mouse(ax,poly_mouse,draw_mouse);
     
@@ -216,7 +229,7 @@ function micromouse(maze)
         figure;
         plot(time_vec, lookds, 'b-', 'DisplayName', 'Lookahead');
         hold on;
-        %plot(time_vec, vel_real, 'r-', 'DisplayName', 'Real Velocity');
+        plot(time_vec, boosts, 'r-', 'DisplayName', 'Boosts');
         xlabel('Time (s)');
         ylabel('Velocity (units/s)');
         legend;

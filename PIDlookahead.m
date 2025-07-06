@@ -77,7 +77,7 @@ classdef PIDlookahead
 
      
             v = mouse.v_base * boost;
-            obj.lookahead=obterLookahead(mouse.v_base,v,obj.last_curvature, tipo_ld);
+            obj.lookahead=obterLookahead(mouse.v_base,mouse.v_media,obj.last_curvature, tipo_ld);
 
             
             
@@ -179,8 +179,8 @@ classdef PIDlookahead
             omega = corr_ang   ;    % soma dos ajustes angular e lateral
             max_w = v*pi;                               % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
-            vR=v/2 +omega*mouse.L/2;
-            vL=v/2 -omega*mouse.L/2; 
+            vR=v +omega*mouse.L/2;
+            vL=v -omega*mouse.L/2; 
             
             
         end

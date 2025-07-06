@@ -1,7 +1,7 @@
 function ld = obterLookahead(v_base,v,w,tipo)
     if strcmp(tipo, 'prop')
         Kdd=0.02;
-        ld=min(0.5,v*Kdd);
+        ld=v*Kdd;
     elseif strcmp(tipo, 'comb')
         l0= 0;
         k1= 0.02;
@@ -10,8 +10,7 @@ function ld = obterLookahead(v_base,v,w,tipo)
     else
         max_ld = 1;
         min_ld = 0.4;
-        if (v>3*v_base), ld= 1;
-        elseif(v>2*v_base), ld=0.6;
+        if(v>2*v_base), ld=max_ld;
         else, ld=min_ld; end
     end
 
