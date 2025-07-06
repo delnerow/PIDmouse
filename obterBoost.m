@@ -1,6 +1,6 @@
 function boost= obterBoost(consec_trecho, cellPercorridas, tipo)
+
         % Boost com pico de velocidade no meio do trecho reto
-        
         if strcmp(tipo, 'gauss') 
             n = consec_trecho;
             boost_max = max((n-cellPercorridas)/2,1); % Valor fixo máximo do boost

@@ -36,7 +36,7 @@ function micromouse(maze)
         'BackgroundColor', 'white', 'EdgeColor', 'black');
     
     % Criar texto para a velocidade
-    vel_text = text(ax, 1, 0.8, 'Velocidade: 0.00 m/s', 'Units', 'normalized', ...
+    vel_text = text(ax, 1, 0.8, 'Velocidade: 0.00 cel/s', 'Units', 'normalized', ...
         'FontSize', 12, 'FontWeight', 'bold', 'Color', 'blue', ...
         'BackgroundColor', 'white', 'EdgeColor', 'black');
 
@@ -70,6 +70,10 @@ function micromouse(maze)
     time_vec = [];
     lookds=[];
     boosts=[];
+    giroL_ref=[];
+    giroL_real=[];
+    w_ref=[];
+    w_real=[];
     
     % Para armazenar o rastro do mouse
     rastro_posicoes = [];
@@ -186,6 +190,11 @@ function micromouse(maze)
         time_vec(end+1) = passo * dt;
         lookds(end+1)=ctrl.lookahead;
         boosts(end+1)=boost;
+        giroL_ref(end+1)= vL/mouse.wheel;
+        giroL_real(end+1)= mouse.wL_real;
+        w_ref(end+1)=(vR - vL) / mouse.L;
+        w_real(end+1)=(mouse.vR_real - mouse.vL_real) / mouse.L;
+
         
         % Armazenar posição e orientação para o rastro
         rastro_posicoes(end+1, :) = [coord.x, coord.y];
@@ -204,7 +213,7 @@ function micromouse(maze)
     end
 
     % Final
-    title(sprintf('Tempo para simulação: %f segundos!',toc));
+    title(sprintf('Tempo para simulação: %.2f segundos', toc));
     set(timer_text, 'String', sprintf('Tempo: %.2fs', passo*dt));
     
     % Atualizar velocidade final
@@ -217,23 +226,52 @@ function micromouse(maze)
         plotRastro(ax, rastro_posicoes);
     end
     if strcmp(config.graficos,'true')
+
+        %  Velocidades - referencia e real
         figure;
-        plot(time_vec, vel_ref, 'b-', 'DisplayName', 'Reference Velocity');
+        plot(time_vec, vel_ref, 'b-', 'DisplayName', 'Velocidade refenrencia');
         hold on;
-        plot(time_vec, vel_real, 'r-', 'DisplayName', 'Real Velocity');
-        xlabel('Time (s)');
-        ylabel('Velocity (units/s)');
+        plot(time_vec, vel_real, 'r-', 'DisplayName', 'Velocidade real');
+        xlabel('Tempo (s)');
+        ylabel('Velocidade (x18cm/s)');
         legend;
-        title('Reference vs Real Velocity Over Time');
+        title('Velocidades Referencia vs Real no tempo');
+        
         hold off;
+
+        % Boosts e lookahead 
         figure;
         plot(time_vec, lookds, 'b-', 'DisplayName', 'Lookahead');
         hold on;
         plot(time_vec, boosts, 'r-', 'DisplayName', 'Boosts');
         xlabel('Time (s)');
-        ylabel('Velocity (units/s)');
+        ylabel('Valor');
         legend;
-        title('Lookahead vs Real Velocity Over Time');
+        title('Lookahead vs Boosts no tempo');
+        
+        hold off;
+
+        % Omega 
+        figure;
+        plot(time_vec, w_ref, 'b-', 'DisplayName', 'Omega referencia');
+        hold on;
+        plot(time_vec, w_real, 'r-', 'DisplayName', 'Omega real');
+        xlabel('Time (s)');
+        ylabel('Valor');
+        legend;
+        title('Omega referencia vs real no tempo');
+        hold off;
+
+        % Giro de uma roda 
+        figure;
+        plot(time_vec, giroL_ref, 'b-', 'DisplayName', 'Giro referencia');
+        hold on;
+        plot(time_vec, giroL_real, 'r-', 'DisplayName', 'Giro real');
+        xlabel('Time (s)');
+        ylabel('Valor');
+        legend;
+        title('Giro referencia vs real roda esquerda no tempo');
+        
         hold off;
     end
 
