@@ -1,15 +1,10 @@
 classdef PIDlookahead
     properties
 
-        % Ganhos do controlador PID para correção lateral (desvio lateral do robô)
-        Kp_lat = 0;  % ganho proporcional lateral
-        Ki_lat = 0;  % ganho integral lateral
-        Kd_lat = 0;  % ganho derivativo lateral
-
         % Ganhos do controlador PID para correção angular (erro de orientação do robô)
-        Kp_ang = 80;  % ganho proporcional angular
-        Ki_ang = 524;  % ganho integral angular
-        Kd_ang = 7.87;  % ganho derivativo angular
+        Kp_ang = 320;  % ganho proporcional angular
+        Ki_ang = 1424;  % ganho integral angular
+        Kd_ang = 5.87;  % ganho derivativo angular
 
         % Estados para cálculo do termo integral e derivativo lateral
         integral_lat = 0;      % soma dos erros laterais para termo integral
@@ -119,16 +114,11 @@ classdef PIDlookahead
 
             % Erro lateral: projeção do vetor do robô sobre a normal à tangente da curva
             % Usando produto vetorial 2D (scalar)
-            error_lat = vec_r(1)*tangent(2) - vec_r(2)*tangent(1);
+
 
             % 3. ========== Erro angular é o próprio alpha (diferença de orientação) ========== 
             error_ang = alpha;
 
-            % 4. ========== Controle PID lateral (para alinhar lateralmente o robô à trajetória) ========== 
-            obj.integral_lat = obj.integral_lat + error_lat * dt;
-            deriv_lat = (error_lat - obj.last_error_lat) / dt;
-            obj.last_error_lat = error_lat;
-            corr_lat = obj.Kp_lat*error_lat + obj.Ki_lat*obj.integral_lat + obj.Kd_lat*deriv_lat;
 
             % 5. ========== Controle PID angular (para ajustar a orientação do robô) ========== 
             obj.integral_ang = obj.integral_ang + error_ang * dt;
@@ -140,7 +130,7 @@ classdef PIDlookahead
             % 7. ========== Correção por sensores de parede ========== 
             wall_thresh = 0.05; % x18 distância mínima aceitável
             repulsion_gain = 1.0;
-            centering_gain = 20.0; % Ganho para centralização entre paredes
+            centering_gain = 10.0; % Ganho para centralização entre paredes
             
             corr_wall = 0;
             
@@ -171,7 +161,8 @@ classdef PIDlookahead
             end
 
             % 8. ========== Combina correções para calcular velocidade angular (omega) ========== 
-            omega = corr_ang + corr_lat + corr_wall;    % soma dos ajustes angular e lateral
+            v=min(v,mouse.v_max);
+            omega = corr_ang  + corr_wall;    % soma dos ajustes angular e lateral
             max_w = v*pi;                               % limita velocidade angular máxima (rad/s)
             omega = max(min(omega, max_w), -max_w);
             vR=v/2 +omega*mouse.L/2;

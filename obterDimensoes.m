@@ -9,8 +9,9 @@ function [start,goal,mouse]= obterDimensoes()
     mouse.wheel = 0.1;                      % Raio das rodas
     mouse.L = 16/18;                        % distância entre rodas (1:18 cm)
     mouse.side=0.5;                         % Diametro das rodas
-    mouse.v_base=8;                         % velocidade padrão
+    mouse.v_base=10;                         % velocidade padrão
     mouse.pulsos_por_volta = 1440;          % Encoder de alta resolução (4x mais preciso)
+    mouse.v_max = 30;
 
     % Variáveis
     mouse.wL_real = 0;
