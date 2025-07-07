@@ -8,6 +8,7 @@ function config = obterConfig()
     config.lookahead = 'prop';  % Como calcular o lookahead prop, comb, ou default
     config.quinas = 'reta';     % reta ou arco: curva das quinas. OBS, diagonais ainda retas.
     config.animar = 'true';     % não anima, apenas plota visualização final
+    config.visual = ' true';    % ter um display final do labirinto
     config.graficos = 'true';   % plota graficos no final
     config.rastro = 'true';     % plota o rastro do mouse pelo labirinto no final
     config.passo = 0.01;        % passo em segundos da simulação
