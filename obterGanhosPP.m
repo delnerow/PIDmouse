@@ -14,11 +14,20 @@ wn = (pi - acos(xi)) / (tr * sqrt(1 - xi^2));
 % 3. Ganhos PID
 Kp = 2 * xi * wn * (1 + Kd);
 Ki = wn^2 * (1 + Kd);
+% Kp0 = 2 * xi * wn * (1 + Kd);
+% Ki0 = wn^2 * (1 + Kd);
+% x0=[Kp0 Ki0];
+% 
+% 
+% F = @(x) funcaoCustoPP(requisitos, x, Kd);
+% x=fminsearch(F, x0);
+% Kp=x(1);
+% Ki=x(2);
 
 fprintf("Ganho Kp: %.3f\n", Kp);
 fprintf("Ganho Ki: %.3f\n", Ki);
 fprintf("Ganho Kd: %.3f\n", Kd);
-sys= tf(1, [1 0]);
+%sys= tf(1, [1 0]);
 
 
 end
