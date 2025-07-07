@@ -92,13 +92,13 @@ function micromouse(maze)
         
         % Boost de velocidade atual há 3 tipos diferentes: gauss, rampa e nulo (boost=1)
         if trecho> length(consecutivos), trecho = trecho-1; end
-        boost = obterBoost(consecutivos(trecho),cellPercorridas,config.boost_tipo,ordens(consecutivos(trecho)));
+        boost = obterBoost(consecutivos(trecho),cellPercorridas,config.boost_tipo);
 
         % Obtendo leitura dos sensores
         sensores= obterInfravermelho(coord, paredesHV);
 
         % Chamando o PID
-        [vR,vL, ctrl] = ctrl.update(coord,mouse, linha, dt, sensores, boost, config.lookahead,config.ld_show,ax);
+        [vR,vL, ctrl] = ctrl.update(coord,mouse, linha, dt, sensores, boost, config.lookahead);
         
         % Encoder
         [mouse.encoder_L,mouse.encoder_R,mouse.encoder_L_prev,mouse.encoder_R_prev, mouse.wL_encoder,mouse.wR_encoder] = encoder_simulado(mouse,dt);

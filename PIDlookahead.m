@@ -26,7 +26,7 @@ classdef PIDlookahead
             end
         end
 
-        function [vR, vL, obj] = update(obj, coord, mouse, linha, dt, sensores, boost, tipo_ld)
+        function [vR, vL, obj] = update(obj, coord, mouse, linha, dt, sensores, boost, tipo_ld,show_ld,ax)
             % Atualiza as velocidades linear (v) e angular (omega) do robô com base no estado atual
             % mouse: da onde tiramos posição e orientação atuais 
             % xx, yy: vetor de pontos do caminho (path) que o robô deve seguir
@@ -51,7 +51,8 @@ classdef PIDlookahead
 
     
             % Velocidade linear comandada
-            v = mouse.v_base * boost;
+            if obj.last_error_angle < 5*pi/180, v = mouse.v_base * boost;
+            else, v= mouse.v_base; end
 
             % Reduzir velocidade se há parede à frente
             if dist_f < wall_thresh
@@ -98,7 +99,7 @@ classdef PIDlookahead
             % Extrai as coordenadas do ponto alvo
             x_target = xx(idx_target);
             y_target = yy(idx_target);
-            % plot(ax,x_target, y_target, 'ro', 'MarkerSize', 3, 'LineWidth', 2); % Ponto alvo
+            if strcmp(show_ld,'true'), plot(ax,x_target, y_target, 'ro', 'MarkerSize', 3, 'LineWidth', 2); end
 
             % Calcula o ângulo alpha entre a orientação do robô e o ponto alvo
             alpha = (atan2(y_target - y, x_target - x) - theta);

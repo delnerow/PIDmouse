@@ -1,9 +1,12 @@
-function boost= obterBoost(consec_trecho, cellPercorridas, tipo)
+function boost= obterBoost(consec_trecho, cellPercorridas, tipo, ordem)
 
         % Boost com pico de velocidade no meio do trecho reto
-        if strcmp(tipo, 'gauss') 
+        if strcmp(tipo, 'gauss')
             n = consec_trecho;
-            boost_max = max((n-cellPercorridas)/2,1); % Valor fixo máximo do boost
+            meio = (n-cellPercorridas)/2;
+            if abs(ordem)==1, meio = meio/2; end
+           
+            boost_max = max(meio,1); % Valor fixo máximo do boost
             mu = n/2; % Pico no meio do trecho
             sigma = n/4; % Largura do pico (quanto menor, mais estreito)
             boost = 1 + (boost_max - 1) * exp(-0.5 * ((cellPercorridas - mu)/sigma)^2);
