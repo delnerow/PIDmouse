@@ -4,7 +4,7 @@ classdef PIDlookahead
         % Ganhos do controlador PID para correção angular (erro de orientação do robô)
         Kp_ang = 70;  % ganho proporcional angular
         Ki_ang = 1224;  % ganho integral angular
-        Kd_ang = 5.87;  % ganho derivativo angular
+        Kd_ang = 5.8;  % ganho derivativo angular
 
         % Estados para cálculo do termo integral e derivativo angular
         integral_ang = 0;      % soma dos erros angulares para termo integral
@@ -42,7 +42,7 @@ classdef PIDlookahead
             dist_f = sensores.dist_f;
 
             wall_thresh = 0.05; % x18 distância mínima aceitável
-            repulsion_gain = 1.0;
+            repulsion_gain = 0.5;
             centering_gain = 0.2; % Ganho para centralização entre paredes
 
             x=coord.x;
