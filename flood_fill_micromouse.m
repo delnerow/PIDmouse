@@ -1,5 +1,25 @@
 function floodval = flood_fill_micromouse(maze, goal, reflood_flag, start)
-% Translated from C logic 
+    % Implementa o algoritmo de preenchimento por inundação (flood fill)
+    % para encontrar o caminho ótimo de qualquer célula do labirinto até
+    % o objetivo. O algoritmo calcula a distância mínima de cada célula
+    % até o objetivo, considerando as paredes do labirinto.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   maze - Matriz NxN representando o labirinto em formato bitfield
+    %          Cada elemento contém bits indicando paredes:
+    %          Bit 0 (0x01): Parede Sul, Bit 1 (0x02): Parede Leste
+    %          Bit 2 (0x04): Parede Norte, Bit 3 (0x08): Parede Oeste
+    %   goal - Vetor [x, y] com coordenadas do objetivo
+    %   reflood_flag - Flag booleano indicando se é reflood (true) ou flood inicial (false)
+    %   start - Vetor [x, y] com coordenadas de início (usado apenas se reflood_flag=true)
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   floodval - Matriz NxN com valores de distância de cada célula até o objetivo
+    %              Células inacessíveis têm valor 255 (LARGEVAL)
+    %              O objetivo tem valor 0, células adjacentes têm valor 1, etc.
+
+
+    % Translated from C logic 
 N = size(maze,1);
 LARGEVAL = 255;
 

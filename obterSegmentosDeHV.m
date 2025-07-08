@@ -1,4 +1,21 @@
 function segmentos = obterSegmentosDeHV(paredes)
+    % Converte a representação de paredes (horizontais e verticais) em
+    % uma lista unificada de segmentos de linha para uso em algoritmos
+    % de detecção de colisão e ray casting.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   paredes - Estrutura contendo paredes extraídas do labirinto:
+    %             .V - Matriz de paredes verticais [x; y1; y2]
+    %                  Cada coluna representa uma parede vertical
+    %             .H - Matriz de paredes horizontais [y; x1; x2]
+    %                  Cada coluna representa uma parede horizontal
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   segmentos - Matriz Mx4 onde cada linha representa um segmento de linha:
+    %               [x1, y1, x2, y2] - coordenadas inicial e final do segmento
+    %               M = número total de segmentos (horizontais + verticais)
+    %
+
     segmentos = [];
 
     % Horizontais

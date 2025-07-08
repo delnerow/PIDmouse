@@ -1,4 +1,15 @@
 classdef PIDgiro
+    % Implementa um controlador PI digital para controle de velocidade
+    % dos motores DC do robô. O controlador usa transformação bilinear
+    % (Tustin) para discretizar o controlador analógico e aplica
+    % controle individual para cada motor (esquerdo e direito).
+    %
+    % PROPRIEDADES PRINCIPAIS:
+    %   rL, rR - Histórico de comandos de referência para motores esquerdo e direito
+    %   yL, yR - Histórico de velocidades reais dos motores esquerdo e direito
+    %   num_z, den_z - Coeficientes do controlador PI discretizado no domínio Z
+    %
+
     properties
         % Histórico de comandos e referências para o TUSTIN
         rL=zeros(1,4);

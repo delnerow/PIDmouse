@@ -1,4 +1,22 @@
 function plotaGraficos (time_vec,vel_ref,vel_real,lookds,boosts,w_ref,w_real,giroL_ref,giroL_real)
+    % Gera um conjunto completo de gráficos para análise de desempenho
+    % do sistema de controle do robô micromouse. Os gráficos mostram
+    % a evolução temporal de diferentes variáveis de controle e estado.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   time_vec - Vetor com instantes de tempo da simulação (segundos)
+    %   vel_ref - Vetor com velocidades de referência (m/s)
+    %   vel_real - Vetor com velocidades reais do robô (m/s)
+    %   lookds - Vetor com valores de lookahead ao longo do tempo
+    %   boosts - Vetor com valores de boost de velocidade ao longo do tempo
+    %   w_ref - Vetor com velocidades angulares de referência (rad/s)
+    %   w_real - Vetor com velocidades angulares reais (rad/s)
+    %   giroL_ref - Vetor com velocidades de referência da roda esquerda (rad/s)
+    %   giroL_real - Vetor com velocidades reais da roda esquerda (rad/s)
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   Nenhum - Função apenas para geração de gráficos
+    %
 
     
             %  Velocidades - referencia e real

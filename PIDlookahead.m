@@ -1,4 +1,18 @@
 classdef PIDlookahead
+    % Implementa um controlador PID de alto nível para seguimento de trajetória
+    % com lookahead adaptativo e evasão de obstáculos. O controlador combina
+    % seguimento de caminho usando pursuit algorithm com correções baseadas
+    % em sensores infravermelhos para evitar colisões.
+    %
+    % PROPRIEDADES PRINCIPAIS:
+    %   Kp_ang, Ki_ang, Kd_ang - Ganhos do controlador PID angular
+    %   integral_ang - Acumulador do termo integral
+    %   last_error_ang - Último erro para cálculo da derivada
+    %   idx_last - Índice do último ponto perseguido no caminho
+    %   lookahead - Distância de lookahead adaptativa
+    %   last_curvature - Curvatura no último ponto para lookahead adaptativo
+    %
+
     properties
 
         % Ganhos do controlador PID para correção angular (erro de orientação do robô)

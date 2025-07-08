@@ -1,5 +1,24 @@
 function linha = path_to_line(path,ordens, cellSize,mostrar, ax, quinas)
-      % Gera trajetória contínua suave a partir do path e ordens (frente, giraDir, giraEsq)
+    % Converte uma sequência de comandos discretos (frente, direita, esquerda)
+    % em uma trajetória contínua e suave que o robô pode seguir. A função
+    % interpola entre pontos discretos usando diferentes estratégias:
+    % linhas retas, diagonais ou curvas suaves dependendo do tipo de movimento.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   path - Matriz Mx2 com sequência de células visitadas [row, col]
+    %   ordens - Vetor com comandos discretos: -1 (esquerda), 0 (frente), 1 (direita)
+    %   cellSize - Tamanho de cada célula do labirinto em metros
+    %   mostrar - String 'true'/'false' para mostrar trajetória no gráfico
+    %   ax - Handle dos eixos onde a trajetória será plotada
+    %   quinas - String 'reta' ou 'curva' para tipo de interpolação em curvas
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   linha - Estrutura contendo:
+    %           .xx - Vetor com coordenadas x da trajetória
+    %           .yy - Vetor com coordenadas y da trajetória
+    %
+
+    % Gera trajetória contínua suave a partir do path e ordens (frente, giraDir, giraEsq)
 
     pos = cell_to_world(path, cellSize);
     N = size(path,1);

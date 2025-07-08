@@ -1,4 +1,15 @@
 function [start,goal,mouse]= obterDimensoes()
+
+    % Define todos os parâmetros físicos, geométricos e de inicialização
+    % do robô micromouse, incluindo dimensões, posições iniciais e
+    % configurações dos sensores e atuadores.
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   start - Vetor [row, col] com coordenadas da célula inicial
+    %   goal - Vetor [row, col] com coordenadas da célula objetivo
+    %   mouse - Estrutura contendo todos os parâmetros do robô:
+    %
+    
     % Célula de partida e célula objetivo
     start = [1,1];  % [row, col]
     goal = [8,8];   % [row, col]

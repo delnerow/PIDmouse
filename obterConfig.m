@@ -1,4 +1,42 @@
 function config = obterConfig()
+    % Define todas as configurações e parâmetros do simulador de micromouse.
+    % Esta função centraliza todos os parâmetros de controle, visualização
+    % e comportamento do sistema, permitindo fácil ajuste e experimentação.
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   config - Estrutura contendo todas as configurações do sistema:
+    %
+    %   CONFIGURAÇÕES DE BOOST:
+    %     boost_tipo - Tipo de boost de velocidade em trechos retos:
+    %                  'gauss': Boost gaussiano (suave)
+    %                  'rampa': Boost linear (rampa)
+    %                  'default': Sem boost (velocidade constante)
+    %
+    %   CONFIGURAÇÕES DE ODOMETRIA:
+    %     encoder - 'true'/'false': Usar odometria (encoders) ou posição real
+    %
+    %   CONFIGURAÇÕES DE VISUALIZAÇÃO:
+    %     path - 'true'/'false': Mostrar trajetória planejada
+    %     track - 'true'/'false': Mostrar trajeto real do robô
+    %     ld_show - 'true'/'false': Mostrar pontos de lookahead
+    %     animar - 'true'/'false': Animar simulação em tempo real
+    %     visual - 'true'/'false': Mostrar visualização final do labirinto
+    %     graficos - 'true'/'false': Gerar gráficos de análise
+    %     rastro - 'true'/'false': Mostrar rastro do robô
+    %
+    %   CONFIGURAÇÕES DE CONTROLE:
+    %     lookahead - Tipo de cálculo de lookahead:
+    %                 'prop': Proporcional à velocidade
+    %                 'comb': Combinado (velocidade + curvatura)
+    %                 'default': Valor fixo
+    %     quinas - Tipo de interpolação em curvas:
+    %              'reta': Interpolação linear (diagonais)
+    %              'arco': Interpolação circular (curvas suaves)
+    %
+    %   CONFIGURAÇÕES DE SIMULAÇÃO:
+    %     passo - Passo de integração da simulação em segundos
+    %
+
 
     config.boost_tipo = 'gauss';% gauss, rampa, default
     config.encoder = 'false';   % default não utiliza odometria

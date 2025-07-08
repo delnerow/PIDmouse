@@ -1,4 +1,23 @@
 function [encoder_L,encoder_R,encoder_L_prev,encoder_R_prev, wL_encoder,wR_encoder] = encoder_simulado(mouse,dt)
+    % Simula o comportamento de encoders reais, incluindo ruído, quantização
+    % e filtragem. Os encoders fornecem feedback de velocidade para o sistema
+    % de controle e odometria do robô.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   mouse - Estrutura contendo estado atual do robô:
+    %           .wL_real, .wR_real - Velocidades angulares reais das rodas (rad/s)
+    %           .encoder_L, .encoder_R - Contadores atuais dos encoders
+    %           .encoder_L_prev, .encoder_R_prev - Contadores anteriores
+    %           .pulsos_por_volta - Resolução do encoder (pulsos por volta)
+    %   dt - Intervalo de tempo da simulação (segundos)
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   encoder_L, encoder_R - Novos contadores dos encoders (pulsos acumulados)
+    %   encoder_L_prev, encoder_R_prev - Contadores anteriores atualizados
+    %   wL_encoder, wR_encoder - Velocidades angulares estimadas pelos encoders (rad/s)
+    %
+
+
     % wL_real, wR_real em rad/s
     % pulsos_por_volta: resolução do encoder (ex: 360)
 

@@ -1,4 +1,26 @@
 function [path, ordens] = stack_caminho(floodval, maze, start)
+    % Converte o resultado do algoritmo de flood fill em uma sequência
+    % de comandos discretos que o robô pode executar. A função encontra
+    % o caminho ótimo do ponto inicial até o objetivo, seguindo sempre
+    % a direção de menor valor no flood fill.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   floodval - Matriz NxN com valores de distância calculados pelo flood fill
+    %              Valores menores indicam células mais próximas do objetivo
+    %   maze - Matriz NxN representando o labirinto em formato bitfield
+    %          Cada elemento contém bits indicando paredes:
+    %          Bit 0 (0x01): Parede Sul, Bit 1 (0x02): Parede Leste
+    %          Bit 2 (0x04): Parede Norte, Bit 3 (0x08): Parede Oeste
+    %   start - Vetor [row, col] com coordenadas do ponto inicial
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   path - Matriz Mx2 com sequência de células visitadas [row, col]
+    %          Cada linha representa uma célula no caminho do início ao objetivo
+    %   ordens - Vetor com comandos discretos para o robô:
+    %            -1: Girar à esquerda (90°)
+    %             0: Seguir em frente
+    %             1: Girar à direita (90°)
+
     % floodval: matriz de custo
     % maze: matriz das paredes, mesma lógica do flood_fill_micromouse
     % start: [row, col] inicial do mouse

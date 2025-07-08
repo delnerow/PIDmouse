@@ -1,4 +1,17 @@
 function micromouse(maze)
+    % Esta é a função principal do simulador de micromouse que executa
+    % a simulação completa de navegação de um robô através de um labirinto.
+    % O sistema utiliza algoritmo de flood fill para planejamento de trajetória,
+    % controle hierárquico PID para seguimento de caminho, e simulação
+    % realista de sensores e motores.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   maze - String com o nome do arquivo de labirinto (sem extensão)
+    %          Exemplo: "torture", "simple", "yama7"
+    %          O arquivo deve estar na pasta mazes/ com extensão .maz
+    %
+
+    
     % Maze no formato bitfield.
     % Wall bits: 0x08=West, 0x01=South, 0x02=East, 0x04=North
 

@@ -1,4 +1,13 @@
 function [num_z, den_z] = PI_motor()
+    % Projeta um controlador PI digital para motor DC usando técnicas
+    % de controle clássico e transformação bilinear (Tustin). O projeto
+    % inclui modelagem da planta, otimização dos ganhos e discretização.
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   num_z - Coeficientes do numerador do controlador discretizado
+    %   den_z - Coeficientes do denominador do controlador discretizado
+    %
+
     % Vmax: 12
     % R: 1.2000
     % L: 5.6000e-04

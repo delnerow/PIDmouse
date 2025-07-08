@@ -1,4 +1,18 @@
 function plotRastro(ax, posicoes)
+    % Plota o rastro completo do robô durante sua navegação pelo labirinto,
+    % mostrando o caminho percorrido desde o início até o final da simulação.
+    % O rastro é visualizado como uma linha contínua com marcações especiais.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   ax - Handle dos eixos onde o rastro será desenhado
+    %   posicoes - Matriz Nx2 com posições (x,y) do robô ao longo do tempo:
+    %              Cada linha representa uma posição [x, y] em um instante
+    %              N = número total de posições registradas
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   Nenhum - Função apenas para visualização
+    %
+
     % Plota o rastro do mouse pelo labirinto (apenas o centro)
     % ax: eixo onde plotar
     % posicoes: matriz [Nx2] com posições (x,y) do mouse

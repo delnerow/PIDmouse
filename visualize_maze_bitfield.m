@@ -1,4 +1,21 @@
 function visualize_maze_bitfield(wall_polys,N, goal, floodval,ax)
+    % Cria uma visualização completa do labirinto incluindo paredes,
+    % valores do flood fill, objetivo e informações dimensionais.
+    % Esta função é responsável pela renderização principal do ambiente
+    % de simulação.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   wall_polys - Array de polyshapes representando as paredes do labirinto
+    %   N - Dimensão do labirinto (NxN)
+    %   goal - Vetor [row, col] com coordenadas do objetivo
+    %   floodval - Matriz NxN com valores do flood fill para cada célula
+    %   ax - Handle dos eixos onde o labirinto será desenhado
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   Nenhum - Função apenas para visualização
+    %
+
+
     % plota o mapa com paredes e etc
     cell_size_cm=18;
     

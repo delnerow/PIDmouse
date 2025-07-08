@@ -1,6 +1,22 @@
 function dist = sensorLeitura(coord, paredesHV, lado)
-    % Lê de um sensor infravermelho específico
-    % lado = 'esquerda','direita' ou 'frente
+    % Simula a leitura de um sensor infravermelho específico usando
+    % ray casting para detectar a distância até a parede mais próxima
+    % na direção do sensor. Implementa detecção de interseção entre
+    % raios e segmentos de linha.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   coord - Estrutura com posição e orientação do robô:
+    %           .x - Posição x do robô no sistema de coordenadas do mundo
+    %           .y - Posição y do robô no sistema de coordenadas do mundo
+    %           .theta - Orientação do robô em radianos
+    %   paredesHV - Matriz Mx4 com segmentos de linha das paredes:
+    %               [x1, y1, x2, y2] - coordenadas inicial e final de cada segmento
+    %   lado - String indicando qual sensor: 'frente', 'direita', 'esquerda'
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   dist - Distância até a parede mais próxima na direção do sensor (metros)
+    %          Se não há parede no alcance, retorna alcance máximo
+
     
     alcance = 1.0; % alcance máximo do sensor
     % Ponto inicial do raio

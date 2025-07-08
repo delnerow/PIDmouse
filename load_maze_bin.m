@@ -1,5 +1,21 @@
 function maze_grid = load_maze_bin(filename)
-    % Lê binário .maz e retorna matriz 16x16 dos bytes das paredes
+    % Carrega um arquivo de labirinto no formato binário (.maz) e
+    % converte para uma matriz NxN onde cada elemento representa
+    % as paredes de uma célula usando bits.
+    %
+    % PARÂMETROS DE ENTRADA:
+    %   filename - String com o caminho completo do arquivo .maz
+    %              Exemplo: "mazes/torture.maz"
+    %
+    % PARÂMETROS DE SAÍDA:
+    %   maze - Matriz NxN onde cada elemento é um byte representando
+    %          as paredes da célula:
+    %          Bit 0 (0x01): Parede Sul
+    %          Bit 1 (0x02): Parede Leste  
+    %          Bit 2 (0x04): Parede Norte
+    %          Bit 3 (0x08): Parede Oeste
+    %
+
     fid = fopen(filename, 'rb');
     if fid == -1
         error('Não foi possível abrir: %s', filename);
